@@ -9,23 +9,30 @@ def usage():
     """
     print(helptxt)
 
+
+class KlassNotFoundException(Exception):
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return "KlassNotFoundException(msg={})".format(self.message)
+
+
 class PyField(object):
-    def __init__(self):
-        # name
-        # type
-        # flags
-        # klass
-        pass
+    def __init__(self, flags, nameidx, descidx, attrcnt):
+        self.flags = flags
+        self.nameidx = nameidx
+        self.descidx = descidx
+        self.attrcnt = attrcnt
+
 
 class PyMethod(object):
-    def __init__(self):
-        # class
-        # name-and-type
-        # bytecode
-        # signature
-        # flags
-        # arguments
-        pass
+    def __init__(self, flags, nameidx, descidx, attrcnt):
+        self.flags = flags
+        self.nameidx = nameidx
+        self.descidx = descidx
+        self.attrcnt = attrcnt
+
 
 class PyKlass(object):
     def __init__(self, ):
@@ -36,8 +43,10 @@ class PyKlass(object):
         #static fields
         pass
 
+
 class PyKonst(object):
     pass
+
 
 class PyKPType(object):
     def __init__(self, val, type, sep = ""):
@@ -45,9 +54,14 @@ class PyKPType(object):
         self.sep = sep
         self.type = type
 
+    def __str__(self):
+        return "PyKPType(val={}, type={}, sep={})".format(self.val, self.type, self.sep)
+
+
 class PyKPEntry(object):
     def __init__(self):
         pass
+
 
 class PyReader(object):
     @staticmethod
@@ -73,13 +87,20 @@ class PyParser(object):
 
         self.major = None
         self.minor = None
+        
+        self.pool_items = []
         self.pool_count = -1
         
-        self.kptable = []
+        self.kptable = {}
         self.kptypes = []
-        self.kpentrys = []
-        self.kpfields = []
-        self.kpmethods = []
+
+        self.klass = None
+        self.flags = None
+        self.super = None
+        self.fields = []
+        self.methods = []
+        self.kentrys = []
+        self.interfaces = []
 
     def parse(self):
         self.__init()
@@ -88,26 +109,30 @@ class PyParser(object):
         self.__basic_type_info()
         self.__fields()
         self.__methods()
-        return self.klass()
+        return self.build()
 
-    def klass(self):
+    def build(self):
         pass
 
     def __init(self):
-        self.kptable.append(PyKPType(1, "UTF8"))
-        self.kptable.append(PyKPType(3, "INTEGER"))
-        self.kptable.append(PyKPType(4, "FLOAT"))
-        self.kptable.append(PyKPType(5, "LONG"))
-        self.kptable.append(PyKPType(6, "DOUBLE"))
-        self.kptable.append(PyKPType(7, "CLASS"))
-        self.kptable.append(PyKPType(8, "STRING"))
-        self.kptable.append(PyKPType(9, "FIELDREF", "."))
-        self.kptable.append(PyKPType(10, "METHODREF", "."))
-        self.kptable.append(PyKPType(11, "INTERFACE_METHODREF"))
-        self.kptable.append(PyKPType(12, "NAMEANDTYPE", ":"))
-        self.kptable.append(PyKPType(15, "METHODHANDLE"))
-        self.kptable.append(PyKPType(16, "METHODTYPE"))
-        self.kptable.append(PyKPType(18, "INVOKEDYNAMIC"))
+        # initialize kptable.
+        self.__kptable(PyKPType(1, "UTF8"))
+        self.__kptable(PyKPType(3, "INTEGER"))
+        self.__kptable(PyKPType(4, "FLOAT"))
+        self.__kptable(PyKPType(5, "LONG"))
+        self.__kptable(PyKPType(6, "DOUBLE"))
+        self.__kptable(PyKPType(7, "CLASS"))
+        self.__kptable(PyKPType(8, "STRING"))
+        self.__kptable(PyKPType(9, "FIELDREF", "."))
+        self.__kptable(PyKPType(10, "METHODREF", "."))
+        self.__kptable(PyKPType(11, "INTERFACE_METHODREF"))
+        self.__kptable(PyKPType(12, "NAMEANDTYPE", ":"))
+        self.__kptable(PyKPType(15, "METHODHANDLE"))
+        self.__kptable(PyKPType(16, "METHODTYPE"))
+        self.__kptable(PyKPType(18, "INVOKEDYNAMIC"))
+
+    def __kptable(self, kptype):
+        self.kptable[kptype.val] = kptype
 
     def __header(self):
         bytes = self.bytes[:4]
@@ -117,23 +142,145 @@ class PyParser(object):
             if actual != expected: 
                 raise Exception("invalid header. expected:%s found:%s" % (expected, actual))
 
-        self.minor = toint(self.bytes[5]) + toint(self.bytes[6])
-        self.major = toint(self.bytes[7]) + toint(self.bytes[8])
-        self.pool_count = toint(self.bytes[9]) + toint(self.bytes[10])
+        self.minor = (toint(self.bytes[4]) << 8) + toint(self.bytes[5])
+        self.major = (toint(self.bytes[6]) << 8) + toint(self.bytes[7])
+        self.pool_count = toint(self.bytes[8]) + toint(self.bytes[9])
+        self.pool_items = [None] * self.pool_count 
         self.offset += 10
 
     def __fields(self):
-        pass
+        oft = self.offset
+        cnt = (toint(self.bytes[oft + 0]) << 8) + toint(self.bytes[oft + 1])
+        for index in range(cnt):
+            flags = (toint(self.bytes[oft + 2]) << 8) + toint(self.bytes[oft + 3])
+            nameidx = (toint(self.bytes[oft + 4]) << 8) + toint(self.bytes[oft + 5])
+            descidx = (toint(self.bytes[oft + 6]) << 8) + toint(self.bytes[oft + 7])
+            attrcnt = (toint(self.bytes[oft + 8]) << 8) + toint(self.bytes[oft + 9])
+            pyfield = PyField(flags, nameidx, descidx, attrcnt)
+
+            #for attrix in range(attrcnt):
+            #    pyfield.setAttr(attrix, self.__parse_attribute(pyfield))
+            self.fields.append(pyfield)
+
+        self.offset += 2 + (cnt * 8)
 
     def __methods(self):
-        pass
+        oft = self.offset
+        cnt = (toint(self.bytes[oft + 0]) << 8) + toint(self.bytes[oft + 1])
+        for index in range(cnt):
+            flags = (toint(self.bytes[oft + 2]) << 8) + toint(self.bytes[oft + 3])
+            nameidx = (toint(self.bytes[oft + 4]) << 8) + toint(self.bytes[oft + 5])
+            descidx = (toint(self.bytes[oft + 6]) << 8) + toint(self.bytes[oft + 7])
+            attrcnt = (toint(self.bytes[oft + 8]) << 8) + toint(self.bytes[oft + 9])
+            pymethod = PyMethod(flags, nameidx, descidx, attrcnt)
+
+            #for attrix in range(attrcnt):
+            #    pymethod.setAttr(attrix, self.__parse_attribute(pymethod))
+            self.fields.append(pymethod)
+
+        self.offset += 2 + (cnt * 8)
 
     def __constant_pool(self):
-        
-        pass
+        print(self.bytes[:10])
+        for index, kp in self.kptable.items():
+            print(index, kp)
+
+        for x in range(1, self.pool_count):
+            entry = toint(self.bytes[self.offset]) & 0xff
+            kptag = self.kptable[entry]
+            self.offset += 1
+
+            print(len(self.bytes), self.offset, kptag)
+
+            if kptag.type == "UTF8":
+                length = (toint(self.bytes[self.offset]) << 8) + toint(self.bytes[self.offset + 1])
+                bytestr = self.bytes[self.offset + 2: self.offset + 2 + length]
+                print(self.offset, length)
+                self.offset += 2 + length
+                # print (bytestr, self.offset)
+
+            elif kptag.type == "INTEGER":
+                oft = self.offset
+                val = (toint(self.bytes[oft + 0]) << 24) \
+                    + (toint(self.bytes[oft + 1]) << 16) \
+                    + (toint(self.bytes[oft + 2]) << 8) \
+                    + (toint(self.bytes[oft + 3]))
+                self.offset += 4
+
+            elif kptag.type == "FLOAT":
+                oft = self.offset
+                val = (toint(self.bytes[oft + 0]) << 24) \
+                    + (toint(self.bytes[oft + 1]) << 16) \
+                    + (toint(self.bytes[oft + 2]) << 8) \
+                    + (toint(self.bytes[oft + 3]))
+                # change to float.
+                self.offset += 4
+
+            elif kptag.type == "LONG":
+                oft = self.offset
+                val1 = (toint(self.bytes[oft + 0]) << 24) \
+                     + (toint(self.bytes[oft + 1]) << 16) \
+                     + (toint(self.bytes[oft + 2]) << 8) \
+                     + (toint(self.bytes[oft + 3]))
+                val2 = (toint(self.bytes[oft + 4]) << 24) \
+                     + (toint(self.bytes[oft + 5]) << 16) \
+                     + (toint(self.bytes[oft + 6]) << 8) \
+                     + (toint(self.bytes[oft + 7]))
+                # change to long.
+                self.offset += 8
+
+            elif kptag.type == "DOUBLE":
+                oft = self.offset
+                val1 = (toint(self.bytes[oft + 0]) << 24) \
+                     + (toint(self.bytes[oft + 1]) << 16) \
+                     + (toint(self.bytes[oft + 2]) << 8) \
+                     + (toint(self.bytes[oft + 3]))
+                val2 = (toint(self.bytes[oft + 4]) << 24) \
+                     + (toint(self.bytes[oft + 5]) << 16) \
+                     + (toint(self.bytes[oft + 6]) << 8) \
+                     + (toint(self.bytes[oft + 7]))
+                # change to long.
+                self.offset += 8
+
+            elif kptag.type == "CLASS":
+                klassRef = (toint(self.bytes[self.offset]) << 8) + toint(self.bytes[self.offset + 1])
+                self.offset += 2
+
+            elif kptag.type == "STRING":
+                strRef = (toint(self.bytes[self.offset]) << 8) + toint(self.bytes[self.offset + 1])
+                self.offset += 2
+
+            elif kptag.type == "NAMEANDTYPE":
+                nameRef = (toint(self.bytes[self.offset + 0]) << 8) + toint(self.bytes[self.offset + 1])
+                typeRef = (toint(self.bytes[self.offset + 2]) << 8) + toint(self.bytes[self.offset + 3])
+                self.offset += 4
+
+            elif kptag.type == "FIELDREF" \
+              or kptag.type == "METHODREF" \
+              or kptag.type == "INTERFACE_METHODREF":
+                print(">>", self.offset)
+                kpIndex = (toint(self.bytes[self.offset + 0]) << 8) + toint(self.bytes[self.offset + 1])
+                ntIndex = (toint(self.bytes[self.offset + 2]) << 8) + toint(self.bytes[self.offset + 3])
+                self.offset += 4
+                print(">>", self.offset)
+
+            else:
+                raise KlassNotFoundException("class not found exception")
 
     def __basic_type_info(self):
+        oft = self.offset
+        self.flags = (toint(self.bytes[oft + 0]) << 8) + toint(self.bytes[oft + 1])
+        self.klass = (toint(self.bytes[oft + 2]) << 8) + toint(self.bytes[oft + 3])
+        self.super = (toint(self.bytes[oft + 4]) << 8) + toint(self.bytes[oft + 5])
+
+        cnt = (toint(self.bytes[oft + 6]) << 8) + toint(self.bytes[oft + 7])
+        calc = lambda x: (toint(self.bytes[oft + x + 8]) << 8) + toint(self.bytes[oft + x + 9])
+        self.interfaces = [calc(index)  for index in range(cnt)]
+        self.offset += 10
+
+    def __parse_attribute(self, field):
         pass
+
 
 class PyInterp(object):
     def __init__(self, repo):
