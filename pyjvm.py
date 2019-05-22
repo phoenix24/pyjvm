@@ -1,6 +1,10 @@
 #!//usr/bin/env python
 
 import os, sys
+from pyutils import toint
+from pyexception import KlassNotFoundException
+from pyklass.models import PyMethod, PyField, PyKPEntry
+
 
 def usage():
     helptxt = """ \
@@ -10,41 +14,8 @@ def usage():
     print(helptxt)
 
 
-class KlassNotFoundException(Exception):
-    def __init__(self, message):
-        self.message = message
-
-    def __str__(self):
-        return "KlassNotFoundException(msg={})".format(self.message)
-
-
-class PyField(object):
-    def __init__(self, flags, nameidx, descidx, attrcnt):
-        self.flags = flags
-        self.nameidx = nameidx
-        self.descidx = descidx
-        self.attrcnt = attrcnt
-
-
-class PyMethod(object):
-    def __init__(self, flags, nameidx, descidx, attrcnt):
-        self.flags = flags
-        self.nameidx = nameidx
-        self.descidx = descidx
-        self.attrcnt = attrcnt
-
-
-class PyKlass(object):
-    def __init__(self, ):
-        #class
-        #super-classes
-        #methods
-        #fields
-        #static fields
-        pass
-
-
 class PyKonst(object):
+    # todo
     pass
 
 
@@ -58,11 +29,6 @@ class PyKPType(object):
         return "PyKPType(val={}, type={}, sep={})".format(self.val, self.type, self.sep)
 
 
-class PyKPEntry(object):
-    def __init__(self):
-        pass
-
-
 class PyReader(object):
     @staticmethod
     def read(file):
@@ -74,12 +40,7 @@ class PyReader(object):
                 byte = bfile.read(1)
         return bytes
 
-def toint(byte):
-    return int.from_bytes(
-        byte, 
-        byteorder='little'
-    )
-    
+
 class PyParser(object):
     def __init__(self, bytes):
         self.bytes = bytes
@@ -112,6 +73,7 @@ class PyParser(object):
         return self.build()
 
     def build(self):
+        # todo
         pass
 
     def __init(self):
@@ -185,7 +147,7 @@ class PyParser(object):
         for index, kp in self.kptable.items():
             print(index, kp)
 
-        for x in range(1, self.pool_count):
+        for index in range(1, self.pool_count):
             entry = toint(self.bytes[self.offset]) & 0xff
             kptag = self.kptable[entry]
             self.offset += 1
@@ -195,9 +157,9 @@ class PyParser(object):
             if kptag.type == "UTF8":
                 length = (toint(self.bytes[self.offset]) << 8) + toint(self.bytes[self.offset + 1])
                 bytestr = self.bytes[self.offset + 2: self.offset + 2 + length]
-                print(self.offset, length)
                 self.offset += 2 + length
-                # print (bytestr, self.offset)
+                # todo: decode byte-array to string
+                self.pool_items.append(PyKPEntry(index, kptag, bytestr))
 
             elif kptag.type == "INTEGER":
                 oft = self.offset
@@ -206,6 +168,7 @@ class PyParser(object):
                     + (toint(self.bytes[oft + 2]) << 8) \
                     + (toint(self.bytes[oft + 3]))
                 self.offset += 4
+                self.pool_items.append(PyKPEntry(index, kptag, val))
 
             elif kptag.type == "FLOAT":
                 oft = self.offset
@@ -213,8 +176,9 @@ class PyParser(object):
                     + (toint(self.bytes[oft + 1]) << 16) \
                     + (toint(self.bytes[oft + 2]) << 8) \
                     + (toint(self.bytes[oft + 3]))
-                # change to float.
+                # todo: change to float.
                 self.offset += 4
+                self.pool_items.append(PyKPEntry(index, kptag, val))
 
             elif kptag.type == "LONG":
                 oft = self.offset
@@ -226,8 +190,10 @@ class PyParser(object):
                      + (toint(self.bytes[oft + 5]) << 16) \
                      + (toint(self.bytes[oft + 6]) << 8) \
                      + (toint(self.bytes[oft + 7]))
-                # change to long.
+                val  = (val1 << 32) + val2
+                # todo: change to long.
                 self.offset += 8
+                self.pool_items.append(PyKPEntry(index, kptag, val))
 
             elif kptag.type == "DOUBLE":
                 oft = self.offset
@@ -239,30 +205,34 @@ class PyParser(object):
                      + (toint(self.bytes[oft + 5]) << 16) \
                      + (toint(self.bytes[oft + 6]) << 8) \
                      + (toint(self.bytes[oft + 7]))
-                # change to long.
+                val  = (val1 << 32) + val2
+                # todo: change to long.
                 self.offset += 8
+                self.pool_items.append(PyKPEntry(index, kptag, val))
 
             elif kptag.type == "CLASS":
                 klassRef = (toint(self.bytes[self.offset]) << 8) + toint(self.bytes[self.offset + 1])
                 self.offset += 2
+                self.pool_items.append(PyKPEntry(index, kptag, ref1=klassRef))
 
             elif kptag.type == "STRING":
                 strRef = (toint(self.bytes[self.offset]) << 8) + toint(self.bytes[self.offset + 1])
                 self.offset += 2
+                self.pool_items.append(PyKPEntry(index, kptag, ref1=strRef))
 
             elif kptag.type == "NAMEANDTYPE":
                 nameRef = (toint(self.bytes[self.offset + 0]) << 8) + toint(self.bytes[self.offset + 1])
                 typeRef = (toint(self.bytes[self.offset + 2]) << 8) + toint(self.bytes[self.offset + 3])
                 self.offset += 4
+                self.pool_items.append(PyKPEntry(index, kptag, ref1=nameRef, ref2=typeRef))
 
             elif kptag.type == "FIELDREF" \
               or kptag.type == "METHODREF" \
               or kptag.type == "INTERFACE_METHODREF":
-                print(">>", self.offset)
                 kpIndex = (toint(self.bytes[self.offset + 0]) << 8) + toint(self.bytes[self.offset + 1])
                 ntIndex = (toint(self.bytes[self.offset + 2]) << 8) + toint(self.bytes[self.offset + 3])
                 self.offset += 4
-                print(">>", self.offset)
+                self.pool_items.append(PyKPEntry(index, kptag, ref1=kpIndex, ref2=ntIndex))
 
             else:
                 raise KlassNotFoundException("class not found exception")
@@ -275,7 +245,7 @@ class PyParser(object):
 
         cnt = (toint(self.bytes[oft + 6]) << 8) + toint(self.bytes[oft + 7])
         calc = lambda x: (toint(self.bytes[oft + x + 8]) << 8) + toint(self.bytes[oft + x + 9])
-        self.interfaces = [calc(index)  for index in range(cnt)]
+        self.interfaces = [calc(index) for index in range(cnt)]
         self.offset += 10
 
     def __parse_attribute(self, field):
@@ -288,8 +258,7 @@ class PyInterp(object):
 
     def execute(self, method):
         pass
-    
-    
+
 
 if __name__ == '__main__':
     args = sys.argv
