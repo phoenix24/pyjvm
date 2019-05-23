@@ -1,32 +1,10 @@
 #!//usr/bin/env python
 
 import os, sys
-from pyutils import toint
-from pyexception import KlassNotFoundException
-from pyklass.models import PyMethod, PyField, PyKPEntry
-
-
-def usage():
-    helptxt = """ \
-    usage:
-    $ ./pyjvm.py <filename.class>
-    """
-    print(helptxt)
-
-
-class PyKonst(object):
-    # todo
-    pass
-
-
-class PyKPType(object):
-    def __init__(self, val, type, sep = ""):
-        self.val = val
-        self.sep = sep
-        self.type = type
-
-    def __str__(self):
-        return "PyKPType(val={}, type={}, sep={})".format(self.val, self.type, self.sep)
+from pyrt.models import PyRtKlass, PyRtMethod, PyRtField, PyVMType
+from pyutils import toint, tostring, usage
+from pyexception import PyKlassNotFoundException, PyTypeNotFoundException, PyIllegalArgumentException
+from pyklass.models import PyRef, PyAttr, PyMethod, PyField, PyKPEntry, PyKPType
 
 
 class PyReader(object):
@@ -50,18 +28,22 @@ class PyParser(object):
         self.minor = None
         
         self.pool_items = []
-        self.pool_count = -1
+        self.pool_count = None
         
         self.kptable = {}
         self.kptypes = []
 
-        self.klass = None
         self.flags = None
-        self.super = None
         self.fields = []
         self.methods = []
         self.kentrys = []
         self.interfaces = []
+
+        self.klass = None
+        self.klassIdx = None
+
+        self.super = None
+        self.superIdx = None
 
     def parse(self):
         self.__init()
@@ -70,14 +52,46 @@ class PyParser(object):
         self.__basic_type_info()
         self.__fields()
         self.__methods()
-        return self.build()
+        return self
 
     def build(self):
-        # todo
-        pass
+        klass = PyRtKlass(self.klass, self.super)
+
+        for field in self.fields:
+            fd = PyRtField(klass, field.name, field.type, field.flags)
+            klass.add_field(fd)
+            klass.add_defined_field(fd)
+
+        for mt in self.methods:
+            mt = PyRtMethod(self.klass, mt.signature, mt.name_type, mt.flags, mt.bytecode)
+            klass.add_defined_method(mt)
+
+        for entry in self.pool_items:
+            if entry.type == "CLASS":
+                klassIdx = entry.ref1.index
+                klassName = self.__resolve(klassIdx)
+                klass.add_klass_ref(entry.index, klassName)
+
+            elif entry.type == "FIELDREF":
+                klassIdx = entry.ref1.index
+                klassName = self.__resolve(klassIdx)
+                nameTypeIdx = entry.ref2.index
+                nameType = self.__resolve(nameTypeIdx)
+                klass.add_field_ref(entry.index, "{}.{}".format(klassName, nameType))
+
+            elif entry.type == "METHODREF":
+                klassIdx = entry.ref1.index
+                klassName = self.__resolve(klassIdx)
+                nameTypeIdx = entry.ref2.index
+                nameType = self.__resolve(nameTypeIdx)
+                klass.add_method_ref(entry.index, "{}.{}".format(klassName, nameType))
+
+        print("fields: ", len(self.fields))
+        print("methods: ", len(self.methods))
+        print("poolitems: ", len(self.pool_items))
+        return klass
 
     def __init(self):
-        # initialize kptable.
         self.__kptable(PyKPType(1, "UTF8"))
         self.__kptable(PyKPType(3, "INTEGER"))
         self.__kptable(PyKPType(4, "FLOAT"))
@@ -107,70 +121,75 @@ class PyParser(object):
         self.minor = (toint(self.bytes[4]) << 8) + toint(self.bytes[5])
         self.major = (toint(self.bytes[6]) << 8) + toint(self.bytes[7])
         self.pool_count = toint(self.bytes[8]) + toint(self.bytes[9])
-        self.pool_items = [None] * self.pool_count 
+        self.pool_items = []
         self.offset += 10
 
     def __fields(self):
         oft = self.offset
         cnt = (toint(self.bytes[oft + 0]) << 8) + toint(self.bytes[oft + 1])
+        self.offset += 2
+
         for index in range(cnt):
-            flags = (toint(self.bytes[oft + 2]) << 8) + toint(self.bytes[oft + 3])
-            nameidx = (toint(self.bytes[oft + 4]) << 8) + toint(self.bytes[oft + 5])
-            descidx = (toint(self.bytes[oft + 6]) << 8) + toint(self.bytes[oft + 7])
-            attrcnt = (toint(self.bytes[oft + 8]) << 8) + toint(self.bytes[oft + 9])
-            pyfield = PyField(flags, nameidx, descidx, attrcnt)
+            flags   = (toint(self.bytes[oft + 0]) << 8) + toint(self.bytes[oft + 1])
+            nameidx = (toint(self.bytes[oft + 2]) << 8) + toint(self.bytes[oft + 3])
+            descidx = (toint(self.bytes[oft + 4]) << 8) + toint(self.bytes[oft + 5])
+            attrcnt = (toint(self.bytes[oft + 6]) << 8) + toint(self.bytes[oft + 7])
 
-            #for attrix in range(attrcnt):
-            #    pyfield.setAttr(attrix, self.__parse_attribute(pyfield))
+            desc = self.__resolve(descidx)
+            pytype = PyVMType['A'] if desc.startwith("L") else PyVMType[desc]
+            pyfield = PyField(
+                self.klass, flags, self.__resolve(nameidx), nameidx, pytype, descidx
+            )
+            self.offset += 8
+
+            for attrix in range(attrcnt):
+               attribute = self.__parse_attribute(pyfield)
+               pyfield.attrs.append(attribute)
             self.fields.append(pyfield)
-
-        self.offset += 2 + (cnt * 8)
 
     def __methods(self):
         oft = self.offset
         cnt = (toint(self.bytes[oft + 0]) << 8) + toint(self.bytes[oft + 1])
+        self.offset += 2
+
         for index in range(cnt):
-            flags = (toint(self.bytes[oft + 2]) << 8) + toint(self.bytes[oft + 3])
-            nameidx = (toint(self.bytes[oft + 4]) << 8) + toint(self.bytes[oft + 5])
-            descidx = (toint(self.bytes[oft + 6]) << 8) + toint(self.bytes[oft + 7])
-            attrcnt = (toint(self.bytes[oft + 8]) << 8) + toint(self.bytes[oft + 9])
-            pymethod = PyMethod(flags, nameidx, descidx, attrcnt)
+            oft = self.offset
+            flags   = (toint(self.bytes[oft + 0]) << 8) + toint(self.bytes[oft + 1])
+            nameIdx = (toint(self.bytes[oft + 2]) << 8) + toint(self.bytes[oft + 3])
+            descIdx = (toint(self.bytes[oft + 4]) << 8) + toint(self.bytes[oft + 5])
+            attrcnt = (toint(self.bytes[oft + 6]) << 8) + toint(self.bytes[oft + 7])
+            pymethod = PyMethod(
+                self.klass, flags, nameIdx, self.__resolve(nameIdx), descIdx, self.__resolve(descIdx)
+            )
+            self.offset += 8
 
-            #for attrix in range(attrcnt):
-            #    pymethod.setAttr(attrix, self.__parse_attribute(pymethod))
-            self.fields.append(pymethod)
-
-        self.offset += 2 + (cnt * 8)
+            for attrix in range(attrcnt):
+               attribute = self.__parse_attribute(pymethod)
+               pymethod.attrs.append(attribute)
+            self.methods.append(pymethod)
 
     def __constant_pool(self):
-        print(self.bytes[:10])
-        for index, kp in self.kptable.items():
-            print(index, kp)
-
         for index in range(1, self.pool_count):
             entry = toint(self.bytes[self.offset]) & 0xff
-            kptag = self.kptable[entry]
+            kptype = self.kptable[entry]
             self.offset += 1
 
-            print(len(self.bytes), self.offset, kptag)
-
-            if kptag.type == "UTF8":
+            if kptype.type == "UTF8":
                 length = (toint(self.bytes[self.offset]) << 8) + toint(self.bytes[self.offset + 1])
-                bytestr = self.bytes[self.offset + 2: self.offset + 2 + length]
+                bytestr = tostring(self.bytes[self.offset + 2: self.offset + 2 + length])
                 self.offset += 2 + length
-                # todo: decode byte-array to string
-                self.pool_items.append(PyKPEntry(index, kptag, bytestr))
+                self.pool_items.append(PyKPEntry(index, kptype, bytestr))
 
-            elif kptag.type == "INTEGER":
+            elif kptype.type == "INTEGER":
                 oft = self.offset
                 val = (toint(self.bytes[oft + 0]) << 24) \
                     + (toint(self.bytes[oft + 1]) << 16) \
                     + (toint(self.bytes[oft + 2]) << 8) \
                     + (toint(self.bytes[oft + 3]))
                 self.offset += 4
-                self.pool_items.append(PyKPEntry(index, kptag, val))
+                self.pool_items.append(PyKPEntry(index, kptype, val))
 
-            elif kptag.type == "FLOAT":
+            elif kptype.type == "FLOAT":
                 oft = self.offset
                 val = (toint(self.bytes[oft + 0]) << 24) \
                     + (toint(self.bytes[oft + 1]) << 16) \
@@ -178,9 +197,9 @@ class PyParser(object):
                     + (toint(self.bytes[oft + 3]))
                 # todo: change to float.
                 self.offset += 4
-                self.pool_items.append(PyKPEntry(index, kptag, val))
+                self.pool_items.append(PyKPEntry(index, kptype, val))
 
-            elif kptag.type == "LONG":
+            elif kptype.type == "LONG":
                 oft = self.offset
                 val1 = (toint(self.bytes[oft + 0]) << 24) \
                      + (toint(self.bytes[oft + 1]) << 16) \
@@ -193,9 +212,9 @@ class PyParser(object):
                 val  = (val1 << 32) + val2
                 # todo: change to long.
                 self.offset += 8
-                self.pool_items.append(PyKPEntry(index, kptag, val))
+                self.pool_items.append(PyKPEntry(index, kptype, val))
 
-            elif kptag.type == "DOUBLE":
+            elif kptype.type == "DOUBLE":
                 oft = self.offset
                 val1 = (toint(self.bytes[oft + 0]) << 24) \
                      + (toint(self.bytes[oft + 1]) << 16) \
@@ -208,48 +227,131 @@ class PyParser(object):
                 val  = (val1 << 32) + val2
                 # todo: change to long.
                 self.offset += 8
-                self.pool_items.append(PyKPEntry(index, kptag, val))
+                self.pool_items.append(PyKPEntry(index, kptype, val))
 
-            elif kptag.type == "CLASS":
+            elif kptype.type == "CLASS":
                 klassRef = (toint(self.bytes[self.offset]) << 8) + toint(self.bytes[self.offset + 1])
                 self.offset += 2
-                self.pool_items.append(PyKPEntry(index, kptag, ref1=klassRef))
+                self.pool_items.append(
+                    PyKPEntry(index, kptype, ref1=PyRef(klassRef))
+                )
 
-            elif kptag.type == "STRING":
+            elif kptype.type == "STRING":
                 strRef = (toint(self.bytes[self.offset]) << 8) + toint(self.bytes[self.offset + 1])
                 self.offset += 2
-                self.pool_items.append(PyKPEntry(index, kptag, ref1=strRef))
+                self.pool_items.append(
+                    PyKPEntry(index, kptype, ref1=PyRef(strRef))
+                )
 
-            elif kptag.type == "NAMEANDTYPE":
+            elif kptype.type == "NAMEANDTYPE":
                 nameRef = (toint(self.bytes[self.offset + 0]) << 8) + toint(self.bytes[self.offset + 1])
                 typeRef = (toint(self.bytes[self.offset + 2]) << 8) + toint(self.bytes[self.offset + 3])
                 self.offset += 4
-                self.pool_items.append(PyKPEntry(index, kptag, ref1=nameRef, ref2=typeRef))
+                self.pool_items.append(
+                    PyKPEntry(index, kptype, ref1=PyRef(nameRef), ref2=PyRef(typeRef))
+                )
 
-            elif kptag.type == "FIELDREF" \
-              or kptag.type == "METHODREF" \
-              or kptag.type == "INTERFACE_METHODREF":
+            elif kptype.type == "FIELDREF" \
+              or kptype.type == "METHODREF" \
+              or kptype.type == "INTERFACE_METHODREF":
                 kpIndex = (toint(self.bytes[self.offset + 0]) << 8) + toint(self.bytes[self.offset + 1])
                 ntIndex = (toint(self.bytes[self.offset + 2]) << 8) + toint(self.bytes[self.offset + 3])
                 self.offset += 4
-                self.pool_items.append(PyKPEntry(index, kptag, ref1=kpIndex, ref2=ntIndex))
+                self.pool_items.append(
+                    PyKPEntry(index, kptype, ref1=PyRef(kpIndex), ref2=PyRef(ntIndex))
+                )
 
             else:
-                raise KlassNotFoundException("class not found exception")
+                raise PyKlassNotFoundException("class not found exception")
 
     def __basic_type_info(self):
         oft = self.offset
         self.flags = (toint(self.bytes[oft + 0]) << 8) + toint(self.bytes[oft + 1])
-        self.klass = (toint(self.bytes[oft + 2]) << 8) + toint(self.bytes[oft + 3])
-        self.super = (toint(self.bytes[oft + 4]) << 8) + toint(self.bytes[oft + 5])
+
+        self.klassIdx = (toint(self.bytes[oft + 2]) << 8) + toint(self.bytes[oft + 3])
+        self.klass = self.__resolve(self.klassIdx)
+
+        self.superIdx = (toint(self.bytes[oft + 4]) << 8) + toint(self.bytes[oft + 5])
+        self.super = self.__resolve(self.superIdx)
 
         cnt = (toint(self.bytes[oft + 6]) << 8) + toint(self.bytes[oft + 7])
         calc = lambda x: (toint(self.bytes[oft + x + 8]) << 8) + toint(self.bytes[oft + x + 9])
         self.interfaces = [calc(index) for index in range(cnt)]
-        self.offset += 10
+        self.offset += (4 * 2) + (cnt * 2)
 
-    def __parse_attribute(self, field):
-        pass
+    def __parse_attribute(self, item):
+        oft = self.offset
+        nameIdx = (toint(self.bytes[oft + 0]) << 8) + toint(self.bytes[oft + 1])
+        attrLen = (toint(self.bytes[oft + 2]) << 24) + \
+                  (toint(self.bytes[oft + 3]) << 16) + \
+                  (toint(self.bytes[oft + 4]) << 8)  + \
+                  (toint(self.bytes[oft + 5]) << 0)
+        endIndex = self.offset + attrLen + 6
+
+        self.offset += 6
+        entry = self.pool_items[nameIdx - 1]
+
+        if entry.string == "ConstantValue":
+            if isinstance(entry, PyMethod):
+                desc = "{}:{}".format(self.__resolve(item.nameidx), self.__resolve(item.descidx))
+                raise PyIllegalArgumentException("Method {} cannot be constant".format(desc))
+            # TODO
+            self.offset += 2
+
+        elif entry.string == "Code":
+            # method expected here, it's code after all :D.
+            if isinstance(item, PyField):
+                desc = "{}:{}".format(self.__resolve(item.nameidx), self.__resolve(item.descidx))
+                raise PyIllegalArgumentException("Field {} cannot contain code".format(desc))
+
+            self.offset += 4
+            oft = self.offset
+            codeLen = (toint(self.bytes[oft + 0]) << 24) + \
+                      (toint(self.bytes[oft + 1]) << 16) + \
+                      (toint(self.bytes[oft + 2]) << 8)  + \
+                      (toint(self.bytes[oft + 3]) << 0)
+            self.offset += 4
+            item.bytecode = self.bytes[self.offset: self.offset + codeLen]
+
+        elif entry.string == "Exceptions":
+            print("encountered exception handler in bytecode, skipping!")
+
+        else:
+            raise PyIllegalArgumentException("unhandled attribute type", entry)
+
+        self.offset = endIndex
+        return PyAttr(nameIdx)
+
+    def __resolve(self, index):
+        entry = self.pool_items[index - 1]
+        entry_type = entry.type.type
+
+        if entry_type == "UTF8":
+            return entry.string
+
+        elif entry_type == "INTEGER":
+            return str(entry.number)
+
+        elif entry_type == "FLOAT":
+            return str(entry.number)
+
+        elif entry_type == "LONG":
+            return str(entry.number)
+
+        elif entry_type == "DOUBLE":
+            return str(entry.number)
+
+        elif entry_type in ("CLASS", "STRING"):
+            other = self.pool_items[entry.ref1.index - 1]
+            return other.string
+
+        elif entry_type in ("FIELDREF", "METHODREF", "INTERFACE_METHODREF", "NAMEANDTYPE"):
+            left = entry.ref1.index
+            right = entry.ref2.index
+            return "%s%s%s" % (self.__resolve(left), entry.type.sep, self.__resolve(right))
+
+        else:
+            raise PyTypeNotFoundException("impossible constant type", entry)
 
 
 class PyInterp(object):
@@ -267,7 +369,7 @@ if __name__ == '__main__':
         
     kfile = args[1]
     bytes = PyReader.read(kfile)
-    parser = PyParser(bytes)
-    pyobject = parser.parse()
+    parser = PyParser(bytes).parse()
+    pyklass = parser.build()
     print("execution complete")
 
