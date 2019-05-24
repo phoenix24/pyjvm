@@ -128,6 +128,7 @@ class PyParser(object):
         oft = self.offset
         cnt = (toint(self.bytes[oft + 0]) << 8) + toint(self.bytes[oft + 1])
         self.offset += 2
+        oft = self.offset
 
         for index in range(cnt):
             flags   = (toint(self.bytes[oft + 0]) << 8) + toint(self.bytes[oft + 1])
@@ -136,7 +137,7 @@ class PyParser(object):
             attrcnt = (toint(self.bytes[oft + 6]) << 8) + toint(self.bytes[oft + 7])
 
             desc = self.__resolve(descidx)
-            pytype = PyVMType['A'] if desc.startwith("L") else PyVMType[desc]
+            pytype = PyVMType['A'] if desc.startswith("L") else PyVMType[desc]
             pyfield = PyField(
                 self.klass, flags, self.__resolve(nameidx), nameidx, pytype, descidx
             )

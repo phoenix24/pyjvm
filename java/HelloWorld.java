@@ -1,5 +1,7 @@
 public class HelloWorld {
     
+    private final static String greeting = "Hello World!";
+    
     public int add(int a, int b) {
 	return a + b;
     }

@@ -10,6 +10,8 @@ public class SampleInvoke {
     return i;
   }
 
+  private static final String greeting = "Hello World!";
+
   public static void main(String[] args) {
     foo();
   }
