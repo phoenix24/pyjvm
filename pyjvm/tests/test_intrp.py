@@ -1,6 +1,7 @@
 import unittest
 from pyjvm.rt.models import PyVMValue, PyVMType
 from pyjvm.rt.intrptr import Intrptr
+from pyjvm.rt.intrpvars import IntrptVars
 from pyjvm.rt.klassrepo import SharedRepo
 from pyjvm.utils.reader import FileReader
 from pyjvm.loader.parser import PyParser
@@ -55,6 +56,27 @@ class TestInterptrSampleInvokeTest(unittest.TestCase):
         self.intrptr = Intrptr(repo)
 
     def test_two(self):
+        method = self.pyklass.get_method("two:(II)I")
+        self.assertEqual(method.signature, '(II)I')
+        self.assertEqual(method.num_params, 2)
+
+        # pass function body vars.
+        result = self.intrptr.execute(method, IntrptVars(args=[
+            PyVMValue.pyint(1),
+            PyVMValue.pyint(3),
+        ]))
+        self.assertEqual(result.value, 4)
+        self.assertEqual(result.type, PyVMType.I)
+
+        # pass other vars.
+        result = self.intrptr.execute(method, IntrptVars(args=[
+            PyVMValue.pyint(100),
+            PyVMValue.pyint(300),
+        ]))
+        self.assertEqual(result.value, 400)
+        self.assertEqual(result.type, PyVMType.I)
+
+    def test_twod(self):
         method = self.pyklass.get_method("twod:()I")
         self.assertEqual(method.signature, '()I')
         self.assertEqual(method.num_params, 0)
