@@ -21,7 +21,7 @@ if __name__ == '__main__':
     repo.add(klass=pyklass)
 
     intrptr = Intrptr(repo)
-    method = pyklass.get_method("foo:()I")
+    method = pyklass.get_method("twod:()I")
 
     result = intrptr.execute(method)
     print("execution complete with result: {}".format(result))

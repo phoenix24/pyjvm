@@ -103,7 +103,7 @@ class PyVMKlass(object):
     def get_fields(self) -> List[str]:
         return list(self.fields.keys())
 
-    def get_method(self, name: str) -> List[bytes]:
+    def get_method(self, name: str):
         return self.methods[name]
 
     def get_methods(self) -> List[str]:
@@ -128,8 +128,28 @@ class PyVMMethod(object):
         self.bytecode = bytecode
         self.signature = signature
         self.name_type = name_type
+        self.func_params = -1
 
     def is_static(self) -> bool:
         return not not (self.flags & PyVMKonst.ACC_STATIC)
+
+    @property
+    def num_params(self) -> int:
+        if self.func_params > -1:
+            return self.func_params
+
+        index, self.func_params = 0, 0
+        while index < len(self.signature):
+            char = self.signature[index]
+            if char in ('Z', 'B', 'S', 'C', 'I', 'J', 'F', 'D'):
+                self.func_params += 1
+            elif char == ')':
+                return self.func_params
+            elif char == 'L':
+                while self.signature[index] != ';':
+                    index += 1
+            index += 1
+
+        return self.func_params
 
 

@@ -30,3 +30,8 @@ class TestKlass(unittest.TestCase):
             'two:(II)I',
             'main:([Ljava/lang/String;)V',
         ])
+
+    def test_method_foo(self):
+        methods = self.pyklass.get_methods()
+        self.assertEqual(len(methods), 6)
+        self.assertEqual(methods[2], 'foo:()I')

@@ -16,7 +16,7 @@ class Intrptr(object):
     def __str__(self):
         return "Intrprtr :D"
 
-    def execute(self, method: PyVMMethod, localvars: IntrptVars = IntrptVars()) -> PyVMValue:
+    def execute(self, method: PyVMMethod, lvars: IntrptVars = IntrptVars()) -> PyVMValue:
         klass = method.klass.name
         bytecode = method.bytecode
         evalstack = IntrptEvalStack()
@@ -52,7 +52,7 @@ class Intrptr(object):
 
             elif opcode.name == "ARETURN":
                 print(">> ", opcode.name)
-                pass
+                evalstack.pop()
 
             elif opcode.name == "ASTORE":
                 print(">> ", opcode.name)
@@ -109,7 +109,7 @@ class Intrptr(object):
 
             elif opcode.name == "DRETURN":
                 print(">> ", opcode.name)
-                pass
+                evalstack.pop()
 
             elif opcode.name == "DSTORE":
                 print(">> ", opcode.name)
@@ -169,31 +169,31 @@ class Intrptr(object):
 
             elif opcode.name == "ICONST_M1":
                 print(">> ", opcode.name)
-                pass
+                evalstack.iconst(-1)
 
             elif opcode.name == "ICONST_0":
                 print(">> ", opcode.name)
-                pass
+                evalstack.iconst(0)
 
             elif opcode.name == "ICONST_1":
                 print(">> ", opcode.name)
-                pass
+                evalstack.iconst(1)
 
             elif opcode.name == "ICONST_2":
                 print(">> ", opcode.name)
-                pass
+                evalstack.iconst(2)
 
             elif opcode.name == "ICONST_3":
                 print(">> ", opcode.name)
-                pass
+                evalstack.iconst(3)
 
             elif opcode.name == "ICONST_4":
                 print(">> ", opcode.name)
-                pass
+                evalstack.iconst(4)
 
             elif opcode.name == "ICONST_5":
                 print(">> ", opcode.name)
-                pass
+                evalstack.iconst(5)
 
             elif opcode.name == "IDIV":
                 print(">> ", opcode.name)
@@ -241,24 +241,26 @@ class Intrptr(object):
 
             elif opcode.name == "ILOAD":
                 print(">> ", opcode.name)
-                pass
+                index = toint(bytecode[offset])
+                value = lvars.iload(index)
+                evalstack.iconst(value)
+                offset += 1
 
             elif opcode.name == "ILOAD_0":
                 print(">> ", opcode.name)
-                print(offset)
-                pass
+                evalstack.push(lvars.iload(0))
 
             elif opcode.name == "ILOAD_1":
                 print(">> ", opcode.name)
-                pass
+                evalstack.push(lvars.iload(1))
 
             elif opcode.name == "ILOAD_2":
                 print(">> ", opcode.name)
-                pass
+                evalstack.push(lvars.iload(2))
 
             elif opcode.name == "ILOAD_3":
                 print(">> ", opcode.name)
-                pass
+                evalstack.push(lvars.iload(3))
 
             elif opcode.name == "IMPDEP1":
                 print(">> ", opcode.name)
@@ -312,8 +314,7 @@ class Intrptr(object):
 
             elif opcode.name == "ISTORE_0":
                 print(">> ", opcode.name)
-                print(offset)
-                pass
+                lvars.store(0, evalstack.pop())
 
             elif opcode.name == "ISTORE_1":
                 print(">> ", opcode.name)
@@ -333,11 +334,11 @@ class Intrptr(object):
 
             elif opcode.name == "MONITORENTER":
                 print(">> ", opcode.name)
-                pass
+                evalstack.pop()
 
             elif opcode.name == "MONITOREXIT":
                 print(">> ", opcode.name)
-                pass
+                evalstack.pop()
 
             elif opcode.name == "NEW":
                 print(">> ", opcode.name)
@@ -361,7 +362,7 @@ class Intrptr(object):
 
             elif opcode.name == "POP":
                 print(">> ", opcode.name)
-                pass
+                evalstack.pop()
 
             elif opcode.name == "POP2":
                 print(">> ", opcode.name)
@@ -394,11 +395,11 @@ class Intrptr(object):
         return None
 
     def dispatch_invoke(self, func: PyVMMethod, evalstack: IntrptEvalStack):
-        count = 0 #todo.
-        if not func.is_static(): count += 1
-        
-        args = [evalstack.pop() for x in range(count, 1, -1)]
+        params = func.num_params - 1
+        if not func.is_static(): params += 1
+
+        args = [evalstack.pop() for x in range(params, -1, -1)]
         vars = IntrptVars(args)
-        
+
         result = self.execute(func, vars)
         if result: evalstack.push(result)
