@@ -10,11 +10,3 @@ def tostring(bytes):
     for x in bytes:
         result += x
     return str(result, 'utf-8')
-
-
-def usage():
-    helptxt = """ \
-    usage:
-    $ ./pyjvm.py <filename.class>
-    """
-    print(helptxt)

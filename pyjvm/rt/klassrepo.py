@@ -1,4 +1,4 @@
-from pyexception import PyVMIllegalStateException
+from pyjvm.exception import PyVMIllegalStateException
 
 class SharedRepo(object):
     def __init__(self):

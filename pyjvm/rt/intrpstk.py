@@ -11,8 +11,6 @@ class IntrptEvalStack(object):
     def iadd(self):
         val1 = self.stack.pop()
         val2 = self.stack.pop()
-        print(val1, type(val1))
-        print(val2, type(val2))
         result = val1.value + val2.value
         pyvalue = PyVMValue.pyint(result)
         self.stack.append(pyvalue)

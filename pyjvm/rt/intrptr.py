@@ -4,11 +4,11 @@ from .opcodes import OPCODES
 from .intrpstk import IntrptEvalStack
 from .intrpvars import IntrptVars
 from .klassrepo import SharedRepo
-from pyutils import toint, tostring
-from pyexception import PyIllegalOpcodeFound
+from pyjvm.exception import PyIllegalOpcodeFound
+from pyjvm.utils.converter import toint, tostring
 
 
-class Intrprtr(object):
+class Intrptr(object):
     def __init__(self, repo: SharedRepo):
         self.repo = repo
         self.opcodes = OPCODES
@@ -304,7 +304,6 @@ class Intrprtr(object):
             elif opcode.name == "IRETURN":
                 print(">> ", opcode.name)
                 pyvalue = evalstack.pop()
-                print(pyvalue)
                 return pyvalue
 
             elif opcode.name == "ISTORE":

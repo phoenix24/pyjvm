@@ -10,6 +10,14 @@ public class SampleInvoke {
     return i;
   }
 
+  public static int too() {
+    return foo() + bar();
+  }
+
+  public static int two(int i, int k) {
+    return i + k;
+  }
+
   private static final String greeting = "Hello World!";
 
   public static void main(String[] args) {
