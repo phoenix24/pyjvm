@@ -1,5 +1,5 @@
 # :D
-from .models import PyRtMethod, PyVMType, PyVMValue
+from .models import PyVMMethod, PyVMType, PyVMValue
 from .opcodes import OPCODES
 from .intrpstk import IntrptEvalStack
 from .intrpvars import IntrptVars
@@ -16,7 +16,7 @@ class Intrptr(object):
     def __str__(self):
         return "Intrprtr :D"
 
-    def execute(self, method: PyRtMethod, localvars: IntrptVars = IntrptVars()) -> PyVMValue:
+    def execute(self, method: PyVMMethod, localvars: IntrptVars = IntrptVars()) -> PyVMValue:
         klass = method.klass.name
         bytecode = method.bytecode
         evalstack = IntrptEvalStack()
@@ -393,7 +393,7 @@ class Intrptr(object):
 
         return None
 
-    def dispatch_invoke(self, func: PyRtMethod, evalstack: IntrptEvalStack):
+    def dispatch_invoke(self, func: PyVMMethod, evalstack: IntrptEvalStack):
         count = 0 #todo.
         if not func.is_static(): count += 1
         

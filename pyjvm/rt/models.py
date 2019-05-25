@@ -113,7 +113,7 @@ class PyVMKlass(object):
         return self.methodsByIndex[index]
 
 
-class PyRtField(object):
+class PyVMField(object):
     def __init__(self, klass: PyVMKlass, name: str, type, flags: int):
         self.name = name
         self.type = type
@@ -121,7 +121,7 @@ class PyRtField(object):
         self.flags = flags
 
 
-class PyRtMethod(object):
+class PyVMMethod(object):
     def __init__(self, klass: PyVMKlass, signature, name_type: str, bytecode, flags: int):
         self.klass = klass
         self.flags = flags

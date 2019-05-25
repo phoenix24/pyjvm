@@ -1,5 +1,5 @@
 
-from pyjvm.rt.models import PyVMKlass, PyRtMethod, PyRtField, PyVMType, PyVMKonst
+from pyjvm.rt.models import PyVMKlass, PyVMMethod, PyVMField, PyVMType, PyVMKonst
 from pyjvm.klass.models import PyRef, PyAttr, PyMethod, PyField, PyKPEntry, PyKPType
 from pyjvm.utils.converter import toint, tostring
 from pyjvm.exception import PyKlassNotFoundException, PyTypeNotFoundException, PyIllegalArgumentException
@@ -44,12 +44,12 @@ class PyParser(object):
         klass = PyVMKlass(self.klass, self.super)
 
         for field in self.fields:
-            fd = PyRtField(klass, field.name, field.type, field.flags)
+            fd = PyVMField(klass, field.name, field.type, field.flags)
             klass.add_field(fd)
             klass.add_defined_field(fd)
 
         for md in self.methods:
-            mt = PyRtMethod(klass, md.signature, md.name_type, md.bytecode, md.flags)
+            mt = PyVMMethod(klass, md.signature, md.name_type, md.bytecode, md.flags)
             klass.add_defined_method(mt)
 
         for entry in self.pool_items:
