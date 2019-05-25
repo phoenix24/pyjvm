@@ -21,7 +21,7 @@ class TestKlass(unittest.TestCase):
 
     def test_methods(self):
         methods = self.pyklass.get_methods()
-        self.assertAlmostEquals(len(methods), 6)
+        self.assertAlmostEqual(len(methods), 6)
         self.assertListEqual(methods, [
             '<init>:()V',
             'bar:()I',
