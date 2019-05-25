@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Mapping, List, Set
 
 
 class PyVMType(Enum):
@@ -90,17 +91,23 @@ class PyRtKlass(object):
         else:
             self.orderedFields.append(field)
 
-    def add_klass_ref(self, index, name):
+    def add_klass_ref(self, index: int, name: str):
         self.klassByIndex.update({index: name})
 
-    def add_field_ref(self, index, name):
+    def add_field_ref(self, index: int, name: str):
         self.fieldsByIndex.update(({index: name}))
 
-    def add_method_ref(self, index, name):
+    def add_method_ref(self, index: int, name: str):
         self.methodsByIndex.update({index: name})
 
-    def get_method(self, name: str):
+    def get_fields(self) -> List[str]:
+        return list(self.fields.keys())
+
+    def get_method(self, name: str) -> List[bytes]:
         return self.methods[name]
+
+    def get_methods(self) -> List[str]:
+        return list(self.methods.keys())
 
     def get_method_by_idx(self, index: int):
         return self.methodsByIndex[index]
