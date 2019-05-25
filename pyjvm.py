@@ -1,7 +1,9 @@
 #!//usr/bin/env python
 
 import os, sys
-from pyrt.models import PyRtKlass, PyRtMethod, PyRtField, PyVMType
+from pyrt.models import PyRtKlass, PyRtMethod, PyRtField, PyVMType, PyKonst
+from pyrt.klassrepo import SharedRepo
+from pyrt.intrprtr import Intrprtr
 from pyutils import toint, tostring, usage
 from pyexception import PyKlassNotFoundException, PyTypeNotFoundException, PyIllegalArgumentException
 from pyklass.models import PyRef, PyAttr, PyMethod, PyField, PyKPEntry, PyKPType
@@ -62,24 +64,25 @@ class PyParser(object):
             klass.add_field(fd)
             klass.add_defined_field(fd)
 
-        for mt in self.methods:
-            mt = PyRtMethod(self.klass, mt.signature, mt.name_type, mt.flags, mt.bytecode)
+        for md in self.methods:
+            mt = PyRtMethod(klass, md.signature, md.name_type, md.bytecode, md.flags)
             klass.add_defined_method(mt)
 
         for entry in self.pool_items:
-            if entry.type == "CLASS":
+            pytype = entry.type.type
+            if pytype == "CLASS":
                 klassIdx = entry.ref1.index
                 klassName = self.__resolve(klassIdx)
                 klass.add_klass_ref(entry.index, klassName)
 
-            elif entry.type == "FIELDREF":
+            elif pytype == "FIELDREF":
                 klassIdx = entry.ref1.index
                 klassName = self.__resolve(klassIdx)
                 nameTypeIdx = entry.ref2.index
                 nameType = self.__resolve(nameTypeIdx)
                 klass.add_field_ref(entry.index, "{}.{}".format(klassName, nameType))
 
-            elif entry.type == "METHODREF":
+            elif pytype == "METHODREF":
                 klassIdx = entry.ref1.index
                 klassName = self.__resolve(klassIdx)
                 nameTypeIdx = entry.ref2.index
@@ -372,5 +375,15 @@ if __name__ == '__main__':
     bytes = PyReader.read(kfile)
     parser = PyParser(bytes).parse()
     pyklass = parser.build()
-    print("execution complete")
+
+    repo = SharedRepo()
+    repo.add(klass=pyklass)
+
+    intrptr = Intrprtr(repo)
+    method = pyklass.get_method("foo:()I")
+
+    # print(method, method.flags, method.bytecode)
+    result = intrptr.execute(method)
+
+    print("execution complete with result:{}".format(result))
 

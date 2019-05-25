@@ -13,6 +13,30 @@ class PyVMType(Enum):
     A = 9
 
 
+class PyVMValue(object):
+    def __init__(self, type: PyVMType, value: int):
+        self.type = type
+        self.value = value
+    
+    def copy(self):
+        return PyVMValue(self.type, self.value)
+
+    @staticmethod
+    def pyref(value: int):
+        return PyVMValue(PyVMType.A, value)
+
+    @staticmethod
+    def pyint(value: int):
+        return PyVMValue(PyVMType.I, value)
+
+    @staticmethod
+    def pydouble(value: float):
+        return PyVMValue(PyVMType.D, value)
+
+    def __str__(self):
+        return "PyVMValue(type={}, value={})".format(self.type, self.value)
+
+
 class PyKonst(object):
     ACC_PUBLIC = 0x0001       # Declared public; may be accessed from outside its package.
     ACC_PRIVATE = 0x0002      # Declared private; usable only within the defining class.
@@ -37,29 +61,12 @@ class PyKonst(object):
     ACC_STRICT = 0x0800       # (Method) Declared strictfp; floating-point mode is FP-strict.
 
 
-class PyRtField(object):
-    def __init__(self, klass, name, type, flags):
-        self.name = name
-        self.type = type
-        self.klass = klass
-        self.flags = flags
-
-
-class PyRtMethod(object):
-    def __init__(self, klass, signature, name_type, bytecode, flags):
-        self.klass = klass
-        self.flags = flags
-        self.bytecode = bytecode
-        self.signature = signature
-        self.name_type = name_type
-
-
 class PyRtKlass(object):
-    def __init__(self, klass, super):
+    def __init__(self, klass: str, super: str):
+        self.name = klass
         self.super = super
-        self.items = {}
 
-        self.klass = klass
+        self.items = {}
         self.klassByIndex = {}
 
         self.fields = {}
@@ -91,5 +98,31 @@ class PyRtKlass(object):
 
     def add_method_ref(self, index, name):
         self.methodsByIndex.update({index: name})
+
+    def get_method(self, name: str):
+        return self.methods[name]
+
+    def get_method_by_idx(self, index: int):
+        return self.methodsByIndex[index]
+
+
+class PyRtField(object):
+    def __init__(self, klass: PyRtKlass, name: str, type, flags: int):
+        self.name = name
+        self.type = type
+        self.klass = klass
+        self.flags = flags
+
+
+class PyRtMethod(object):
+    def __init__(self, klass: PyRtKlass, signature, name_type: str, bytecode, flags: int):
+        self.klass = klass
+        self.flags = flags
+        self.bytecode = bytecode
+        self.signature = signature
+        self.name_type = name_type
+
+    def is_static(self) -> bool:
+        return not not (self.flags & PyKonst.ACC_STATIC)
 
 
