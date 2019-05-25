@@ -1,40 +1,11 @@
 # :D
 from .models import PyRtMethod, PyVMType, PyVMValue
 from .opcodes import OPCODES
+from .intrpstk import IntrptEvalStack
+from .intrpvars import IntrptVars
 from .klassrepo import SharedRepo
 from pyutils import toint, tostring
 from pyexception import PyIllegalOpcodeFound
-
-class IntrptVars(object):
-    def __init__(self, args=[]):
-        self.args = args
-
-
-class IntrptEvalStack(object):
-    def __init__(self):
-        self.stack = []
-
-    def aconst_null(self):
-        pass
-
-    def iadd(self):
-        val1 = self.stack.pop()
-        val2 = self.stack.pop()
-        print(val1, type(val1))
-        print(val2, type(val2))
-        result = val1.value + val2.value
-        pyvalue = PyVMValue.pyint(result)
-        self.stack.append(pyvalue)
-
-    def iconst(self, value):
-        pyvalue = PyVMValue.pyint(value)
-        self.stack.append(pyvalue)
-
-    def pop(self) -> PyVMValue: 
-        return self.stack.pop()
-
-    def push(self, pyvalue: PyVMValue): 
-        self.stack.append(pyvalue)
 
 
 class Intrprtr(object):
@@ -429,6 +400,6 @@ class Intrprtr(object):
         
         args = [evalstack.pop() for x in range(count, 1, -1)]
         vars = IntrptVars(args)
+        
         result = self.execute(func, vars)
-        # todo: should be a pyvalue
         if result: evalstack.push(result)
