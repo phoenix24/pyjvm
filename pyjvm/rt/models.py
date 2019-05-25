@@ -62,7 +62,7 @@ class PyVMKonst(object):
     ACC_STRICT = 0x0800       # (Method) Declared strictfp; floating-point mode is FP-strict.
 
 
-class PyRtKlass(object):
+class PyVMKlass(object):
     def __init__(self, klass: str, super: str):
         self.name = klass
         self.super = super
@@ -114,7 +114,7 @@ class PyRtKlass(object):
 
 
 class PyRtField(object):
-    def __init__(self, klass: PyRtKlass, name: str, type, flags: int):
+    def __init__(self, klass: PyVMKlass, name: str, type, flags: int):
         self.name = name
         self.type = type
         self.klass = klass
@@ -122,7 +122,7 @@ class PyRtField(object):
 
 
 class PyRtMethod(object):
-    def __init__(self, klass: PyRtKlass, signature, name_type: str, bytecode, flags: int):
+    def __init__(self, klass: PyVMKlass, signature, name_type: str, bytecode, flags: int):
         self.klass = klass
         self.flags = flags
         self.bytecode = bytecode

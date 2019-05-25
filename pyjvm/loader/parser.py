@@ -1,5 +1,5 @@
 
-from pyjvm.rt.models import PyRtKlass, PyRtMethod, PyRtField, PyVMType, PyVMKonst
+from pyjvm.rt.models import PyVMKlass, PyRtMethod, PyRtField, PyVMType, PyVMKonst
 from pyjvm.klass.models import PyRef, PyAttr, PyMethod, PyField, PyKPEntry, PyKPType
 from pyjvm.utils.converter import toint, tostring
 from pyjvm.exception import PyKlassNotFoundException, PyTypeNotFoundException, PyIllegalArgumentException
@@ -41,7 +41,7 @@ class PyParser(object):
         return self
 
     def build(self):
-        klass = PyRtKlass(self.klass, self.super)
+        klass = PyVMKlass(self.klass, self.super)
 
         for field in self.fields:
             fd = PyRtField(klass, field.name, field.type, field.flags)
