@@ -22,13 +22,27 @@ class PyBase(object):
 
 
 class PyField(PyBase):
-    def __init__(self, klass, flags, name, nameIdx, pytype, descIdx):
+    def __init__(self, klass, flags, name, nameIdx, type, descIdx):
         super().__init__(klass, flags, nameIdx, descIdx)
         self.name = name
-        self.type = pytype
+        self.type = type
+
+    def __repr__(self):
+        return self.__str__()
 
     def __str__(self):
-        return "PyField(klass={}, field={})".format(self.klass, self.name)
+        return "PyField(klass={}, name={}, nameIdx={}, type={}, flags={}, descIdx={})".format(
+            self.klass, self.name, self.nameidx, self.type, self.flags, self.descidx
+        )
+
+    def __eq__(self, other):
+        return isinstance(other, PyField)\
+           and self.klass == other.klass \
+           and self.flags == other.flags \
+           and self.type == other.type \
+           and self.name == other.name \
+           and self.nameidx == other.nameidx \
+           and self.descidx == other.descidx
 
 
 class PyMethod(PyBase):
@@ -38,8 +52,21 @@ class PyMethod(PyBase):
         self.signature = desc
         self.name_type = "{}:{}".format(name, desc)
 
+    def __repr__(self):
+        return self.__str__()
+
     def __str__(self):
-        return "PyMethod(klass={}, method={})".format(self.klass, self.name_type)
+        return "PyMethod(klass={}, name_type={}, nameIdx={}, flags={}, descidx={}, desc={}, bytecode={})".format(
+            self.klass, self.name_type, self.nameidx, self.flags, self.descidx, self.signature, self.bytecode
+        )
+
+    def __eq__(self, other):
+        return isinstance(other, PyMethod) \
+            and self.klass == other.klass \
+            and self.flags == other.flags \
+            and self.descidx == other.descidx \
+            and self.nameidx == other.nameidx \
+            and self.name_type == other.name_type
 
 
 class PyKPType(object):

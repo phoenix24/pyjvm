@@ -32,12 +32,12 @@ class PyParser(object):
         self.superIdx = None
 
     def parse(self):
-        self.__init()
-        self.__header()
-        self.__constant_pool()
-        self.__basic_type_info()
-        self.__fields()
-        self.__methods()
+        self._init()
+        self._header()
+        self._constant_pool()
+        self._basic_type_info()
+        self._fields()
+        self._methods()
         return self
 
     def build(self):
@@ -74,7 +74,7 @@ class PyParser(object):
                 klass.add_method_ref(entry.index, "{}.{}".format(klassName, nameType))
         return klass
 
-    def __init(self):
+    def _init(self):
         self.__kptable(PyKPType(1, "UTF8"))
         self.__kptable(PyKPType(3, "INTEGER"))
         self.__kptable(PyKPType(4, "FLOAT"))
@@ -90,10 +90,10 @@ class PyParser(object):
         self.__kptable(PyKPType(16, "METHODTYPE"))
         self.__kptable(PyKPType(18, "INVOKEDYNAMIC"))
 
-    def __kptable(self, kptype):
+    def __kptable(self, kptype: PyKPType) -> None:
         self.kptable[kptype.val] = kptype
 
-    def __header(self):
+    def _header(self):
         bytes = self.bytes[:4]
         header = [0xca, 0xfe, 0xba, 0xbe]
         for actual, expected in zip(bytes, header):
@@ -107,7 +107,7 @@ class PyParser(object):
         self.pool_items = []
         self.offset += 10
 
-    def __fields(self):
+    def _fields(self):
         oft = self.offset
         cnt = (toint(self.bytes[oft + 0]) << 8) + toint(self.bytes[oft + 1])
         self.offset += 2
@@ -131,7 +131,7 @@ class PyParser(object):
                pyfield.attrs.append(attribute)
             self.fields.append(pyfield)
 
-    def __methods(self):
+    def _methods(self):
         oft = self.offset
         cnt = (toint(self.bytes[oft + 0]) << 8) + toint(self.bytes[oft + 1])
         self.offset += 2
@@ -152,7 +152,7 @@ class PyParser(object):
                pymethod.attrs.append(attribute)
             self.methods.append(pymethod)
 
-    def __constant_pool(self):
+    def _constant_pool(self):
         for index in range(1, self.pool_count):
             entry = toint(self.bytes[self.offset]) & 0xff
             kptype = self.kptable[entry]
@@ -248,7 +248,7 @@ class PyParser(object):
             else:
                 raise PyKlassNotFoundException("class not found exception")
 
-    def __basic_type_info(self):
+    def _basic_type_info(self):
         oft = self.offset
         self.flags = (toint(self.bytes[oft + 0]) << 8) + toint(self.bytes[oft + 1])
 
