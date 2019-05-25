@@ -1,5 +1,5 @@
 
-from pyjvm.rt.models import PyRtKlass, PyRtMethod, PyRtField, PyVMType, PyKonst
+from pyjvm.rt.models import PyRtKlass, PyRtMethod, PyRtField, PyVMType, PyVMKonst
 from pyjvm.klass.models import PyRef, PyAttr, PyMethod, PyField, PyKPEntry, PyKPType
 from pyjvm.utils.converter import toint, tostring
 from pyjvm.exception import PyKlassNotFoundException, PyTypeNotFoundException, PyIllegalArgumentException

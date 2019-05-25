@@ -38,7 +38,7 @@ class PyVMValue(object):
         return "PyVMValue(type={}, value={})".format(self.type, self.value)
 
 
-class PyKonst(object):
+class PyVMKonst(object):
     ACC_PUBLIC = 0x0001       # Declared public; may be accessed from outside its package.
     ACC_PRIVATE = 0x0002      # Declared private; usable only within the defining class.
     ACC_PROTECTED = 0x0004    # Declared protected; may be accessed within subclasses.
@@ -86,7 +86,7 @@ class PyRtKlass(object):
 
     def add_field(self, field):
         self.fields.update({field.name: field})
-        if field.flags & PyKonst.ACC_STATIC:
+        if field.flags & PyVMKonst.ACC_STATIC:
             self.staticFieldByName.update({field.name: None})
         else:
             self.orderedFields.append(field)
@@ -130,6 +130,6 @@ class PyRtMethod(object):
         self.name_type = name_type
 
     def is_static(self) -> bool:
-        return not not (self.flags & PyKonst.ACC_STATIC)
+        return not not (self.flags & PyVMKonst.ACC_STATIC)
 
 
