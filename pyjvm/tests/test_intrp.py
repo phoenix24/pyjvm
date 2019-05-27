@@ -84,3 +84,216 @@ class TestInterptrSampleInvokeTest(unittest.TestCase):
         result = self.intrptr.execute(method)
         self.assertEqual(result.value, 4)
         self.assertEqual(result.type, PyVMType.I)
+
+    def test_mul(self):
+        method = self.pyklass.get_method("mul:(II)I")
+        self.assertEqual(method.signature, '(II)I')
+        self.assertEqual(method.num_params, 2)
+
+        # pass function body vars.
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(2),
+            PyVMValue.pyint(3),
+        ]))
+        self.assertEqual(result.value, 6)
+        self.assertEqual(result.type, PyVMType.I)
+
+    def test_div(self):
+        method = self.pyklass.get_method("div:(II)I")
+        self.assertEqual(method.signature, '(II)I')
+        self.assertEqual(method.num_params, 2)
+
+        # pass function body vars.
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(20),
+            PyVMValue.pyint(5),
+        ]))
+        self.assertEqual(result.value, 4)
+        self.assertEqual(result.type, PyVMType.I)
+
+    def test_rem(self):
+        method = self.pyklass.get_method("rem:(II)I")
+        self.assertEqual(method.signature, '(II)I')
+        self.assertEqual(method.num_params, 2)
+
+        # pass function body vars.
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(20),
+            PyVMValue.pyint(3),
+        ]))
+        self.assertEqual(result.value, 2)
+        self.assertEqual(result.type, PyVMType.I)
+
+    def test_sub(self):
+        method = self.pyklass.get_method("sub:(II)I")
+        self.assertEqual(method.signature, '(II)I')
+        self.assertEqual(method.num_params, 2)
+
+        # pass function body vars.
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(20),
+            PyVMValue.pyint(5),
+        ]))
+        self.assertEqual(result.value, 15)
+        self.assertEqual(result.type, PyVMType.I)
+
+    def test_inc1(self):
+        method = self.pyklass.get_method("inc1:(I)I")
+        self.assertEqual(method.signature, '(I)I')
+        self.assertEqual(method.num_params, 1)
+
+        # pass function body vars.
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(5),
+        ]))
+        self.assertEqual(result.value, 5)
+        self.assertEqual(result.type, PyVMType.I)
+
+    def test_inc2(self):
+        method = self.pyklass.get_method("inc2:(I)I")
+        self.assertEqual(method.signature, '(I)I')
+        self.assertEqual(method.num_params, 1)
+
+        # pass function body vars.
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(5),
+        ]))
+        self.assertEqual(result.value, 6)
+        self.assertEqual(result.type, PyVMType.I)
+
+    def test_neg(self):
+        method = self.pyklass.get_method("neg:(I)I")
+        self.assertEqual(method.signature, '(I)I')
+        self.assertEqual(method.num_params, 1)
+
+        # pass function body vars.
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(5),
+        ]))
+        self.assertEqual(result.value, -5)
+        self.assertEqual(result.type, PyVMType.I)
+
+    def test_or(self):
+        method = self.pyklass.get_method("or:(II)I")
+        self.assertEqual(method.signature, '(II)I')
+        self.assertEqual(method.num_params, 2)
+
+        # pass function body vars.
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(20),
+            PyVMValue.pyint(5),
+        ]))
+        self.assertEqual(result.value, 21)
+        self.assertEqual(result.type, PyVMType.I)
+
+    def test_and(self):
+        method = self.pyklass.get_method("and:(II)I")
+        self.assertEqual(method.signature, '(II)I')
+        self.assertEqual(method.num_params, 2)
+
+        # pass function body vars.
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(20),
+            PyVMValue.pyint(5),
+        ]))
+        self.assertEqual(result.value, 4)
+        self.assertEqual(result.type, PyVMType.I)
+
+    def test_calc1(self):
+        method = self.pyklass.get_method("calc1:(II)I")
+        self.assertEqual(method.signature, '(II)I')
+        self.assertEqual(method.num_params, 2)
+
+        # pass function body vars.
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(15),
+            PyVMValue.pyint(5),
+        ]))
+        self.assertEqual(result.value, 100)
+        self.assertEqual(result.type, PyVMType.I)
+
+    @unittest.skip
+    def test_soo(self):
+        method = self.pyklass.get_method("soo:()Ljava/lang/String;")
+        self.assertEqual(method.signature, '()Ljava/lang/String;')
+        self.assertEqual(method.num_params, 0)
+
+        result = self.intrptr.execute(method)
+        self.assertEqual(result.value, 4)
+        self.assertEqual(result.type, PyVMType.I)
+
+    def test_ifeq(self):
+        method = self.pyklass.get_method("ifeq:(II)I")
+        self.assertEqual(method.signature, '(II)I')
+        self.assertEqual(method.num_params, 2)
+
+        # pass function body vars.
+        result = self.intrptr.execute(method, IntrptVars(args=[
+            PyVMValue.pyint(4),
+            PyVMValue.pyint(5),
+        ]))
+
+        self.assertEqual(result.value, 5)
+        self.assertEqual(result.type, PyVMType.I)
+
+        # pass other vars.
+        result = self.intrptr.execute(method, IntrptVars(args=[
+            PyVMValue.pyint(300),
+            PyVMValue.pyint(100),
+        ]))
+        self.assertEqual(result.value, 100)
+        self.assertEqual(result.type, PyVMType.I)
+
+    def test_ifleq(self):
+        method = self.pyklass.get_method("ifleq:(II)I")
+        self.assertEqual(method.signature, '(II)I')
+        self.assertEqual(method.num_params, 2)
+
+        # pass function body vars.
+        result = self.intrptr.execute(method, IntrptVars(args=[
+            PyVMValue.pyint(4),
+            PyVMValue.pyint(5),
+        ]))
+
+        self.assertEqual(result.value, 4)
+        self.assertEqual(result.type, PyVMType.I)
+
+        # pass other vars.
+        result = self.intrptr.execute(method, IntrptVars(args=[
+            PyVMValue.pyint(300),
+            PyVMValue.pyint(100),
+        ]))
+        self.assertEqual(result.value, 100)
+        self.assertEqual(result.type, PyVMType.I)
+
+    def test_ifgeq(self):
+        method = self.pyklass.get_method("ifgeq:(II)I")
+        self.assertEqual(method.signature, '(II)I')
+        self.assertEqual(method.num_params, 2)
+
+        # pass function body vars.
+        result = self.intrptr.execute(method, IntrptVars(args=[
+            PyVMValue.pyint(4),
+            PyVMValue.pyint(5),
+        ]))
+
+        self.assertEqual(result.value, 5)
+        self.assertEqual(result.type, PyVMType.I)
+
+        # pass other vars.
+        result = self.intrptr.execute(method, IntrptVars(args=[
+            PyVMValue.pyint(300),
+            PyVMValue.pyint(100),
+        ]))
+        self.assertEqual(result.value, 300)
+        self.assertEqual(result.type, PyVMType.I)
+
+    def test_ifelse4(self):
+        print(self.pyklass.methods)
+        method = self.pyklass.get_method("ifelse4:()I")
+        self.assertEqual(method.signature, '()I')
+        self.assertEqual(method.num_params, 0)
+
+        result = self.intrptr.execute(method)
+        self.assertEqual(result.value, 4)
+        self.assertEqual(result.type, PyVMType.I)

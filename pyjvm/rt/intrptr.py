@@ -21,6 +21,7 @@ class Intrptr(object):
         bytecode = method.bytecode
         evalstack = IntrptEvalStack()
         description = method.name_type
+        print(bytecode)
 
         offset = 0
         while True:
@@ -32,7 +33,7 @@ class Intrptr(object):
                 raise PyIllegalOpcodeFound(message)
 
             num = opcode.params
-            print("{} {}".format(toint(byte), byte))
+            print("{} {} {}".format(offset-1, toint(byte), byte))
 
             if opcode.name == "ACONST_NULL":
                 print(">> ", opcode.name)
@@ -153,7 +154,8 @@ class Intrptr(object):
 
             elif opcode.name == "GOTO":
                 print(">> ", opcode.name)
-                pass
+                jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
+                offset += jump
 
             elif opcode.name == "I2D":
                 print(">> ", opcode.name)
@@ -165,7 +167,7 @@ class Intrptr(object):
 
             elif opcode.name == "IAND":
                 print(">> ", opcode.name)
-                pass
+                evalstack.iand()
 
             elif opcode.name == "ICONST_M1":
                 print(">> ", opcode.name)
@@ -197,7 +199,44 @@ class Intrptr(object):
 
             elif opcode.name == "IDIV":
                 print(">> ", opcode.name)
+                evalstack.idiv()
+
+            elif opcode.name == "IF_ICMPEQ":
+                print(">> ", opcode.name)
+                val1 = evalstack.pop()
+                val2 = evalstack.pop()
+                jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1])
+                if (val1.value == val2.value): offset += (jump - 1)
+                offset += 2
+
+            elif opcode.name == "IF_ICMPNE":
+                print(">> ", opcode.name)
+                val1 = evalstack.pop()
+                val2 = evalstack.pop()
+                jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
+                offset += jump if (val1.value != val2.value) else 2
+
+            elif opcode.name == "IF_ICMPLT":
+                print(">> ", opcode.name)
                 pass
+
+            elif opcode.name == "IF_ICMPGE":
+                print(">> ", opcode.name)
+                val1 = evalstack.pop()
+                val2 = evalstack.pop()
+                jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
+                offset += jump if (val1.value >= val2.value) else 2
+
+            elif opcode.name == "IF_ICMPGT":
+                print(">> ", opcode.name)
+                pass
+
+            elif opcode.name == "IF_ICMPLE":
+                print(">> ", opcode.name)
+                val1 = evalstack.pop()
+                val2 = evalstack.pop()
+                jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
+                offset += jump if (val1.value <= val2.value) else 2
 
             elif opcode.name == "IF_ICMPEQ":
                 print(">> ", opcode.name)
@@ -237,7 +276,11 @@ class Intrptr(object):
 
             elif opcode.name == "IINC":
                 print(">> ", opcode.name)
-                pass
+                lvars.iinc(
+                    toint(bytecode[offset + 0]),
+                    toint(bytecode[offset + 1])
+                )
+                offset += 2
 
             elif opcode.name == "ILOAD":
                 print(">> ", opcode.name)
@@ -272,11 +315,11 @@ class Intrptr(object):
 
             elif opcode.name == "IMUL":
                 print(">> ", opcode.name)
-                pass
+                evalstack.imul()
 
             elif opcode.name == "INEG":
                 print(">> ", opcode.name)
-                pass
+                evalstack.ineg()
 
             elif opcode.name == "INVOKESPECIAL":
                 print(">> ", opcode.name)
@@ -297,14 +340,15 @@ class Intrptr(object):
 
             elif opcode.name == "IOR":
                 print(">> ", opcode.name)
-                pass
+                evalstack.ior()
 
             elif opcode.name == "IREM":
                 print(">> ", opcode.name)
-                pass
+                evalstack.irem()
 
             elif opcode.name == "IRETURN":
                 print(">> ", opcode.name)
+                print (evalstack)
                 pyvalue = evalstack.pop()
                 return pyvalue
 
@@ -318,26 +362,28 @@ class Intrptr(object):
 
             elif opcode.name == "ISTORE_1":
                 print(">> ", opcode.name)
-                pass
+                lvars.store(1, evalstack.pop())
 
             elif opcode.name == "ISTORE_2":
                 print(">> ", opcode.name)
-                pass
+                lvars.store(2, evalstack.pop())
 
             elif opcode.name == "ISTORE_3":
                 print(">> ", opcode.name)
-                pass
+                lvars.store(3, evalstack.pop())
 
             elif opcode.name == "ISUB":
                 print(">> ", opcode.name)
-                pass
+                evalstack.isub()
 
             elif opcode.name == "MONITORENTER":
                 print(">> ", opcode.name)
+                #TODO
                 evalstack.pop()
 
             elif opcode.name == "MONITOREXIT":
                 print(">> ", opcode.name)
+                #TODO
                 evalstack.pop()
 
             elif opcode.name == "NEW":

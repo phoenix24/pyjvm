@@ -37,6 +37,9 @@ class PyVMValue(object):
     def __str__(self):
         return "PyVMValue(type={}, value={})".format(self.type, self.value)
 
+    def __repr__(self):
+        return self.__str__()
+
 
 class PyVMKonst(object):
     ACC_PUBLIC = 0x0001       # Declared public; may be accessed from outside its package.

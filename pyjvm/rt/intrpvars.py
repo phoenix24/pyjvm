@@ -16,3 +16,7 @@ class IntrptVars(object):
 
     def store(self, index: int, value: PyVMValue) -> None:
         self.args[index] = value
+
+    def iinc(self, offset, amount):
+        var = self.args[offset & 0xff]
+        self.args[offset & 0xff] = PyVMValue.pyint(var.value + amount)
