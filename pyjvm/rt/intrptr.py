@@ -78,70 +78,97 @@ class Intrptr(object):
 
             elif opcode.name == "DADD":
                 print(">> ", opcode.name)
-                pass
-
-            elif opcode.name == "DCONST_0":
-                print(">> ", opcode.name)
-                pass
-
-            elif opcode.name == "DCONST_1":
-                print(">> ", opcode.name)
-                pass
-
-            elif opcode.name == "DLOAD":
-                print(">> ", opcode.name)
-                pass
-
-            elif opcode.name == "DLOAD_0":
-                print(">> ", opcode.name)
-                pass
-
-            elif opcode.name == "DLOAD_1":
-                print(">> ", opcode.name)
-                pass
-
-            elif opcode.name == "DLOAD_2":
-                print(">> ", opcode.name)
-                pass
-
-            elif opcode.name == "DLOAD_3":
-                print(">> ", opcode.name)
-                pass
-
-            elif opcode.name == "DRETURN":
-                print(">> ", opcode.name)
-                evalstack.pop()
-
-            elif opcode.name == "DSTORE":
-                print(">> ", opcode.name)
-                pass
-
-            elif opcode.name == "DSTORE_0":
-                print(">> ", opcode.name)
-                pass
-
-            elif opcode.name == "DSTORE_1":
-                print(">> ", opcode.name)
-                pass
-
-            elif opcode.name == "DSTORE_2":
-                print(">> ", opcode.name)
-                pass
-
-            elif opcode.name == "DSTORE_3":
-                print(">> ", opcode.name)
-                pass
+                print(evalstack)
+                evalstack.dadd()
 
             elif opcode.name == "DSUB":
                 print(">> ", opcode.name)
-                pass
+                evalstack.dsub()
+
+            elif opcode.name == "DMUL":
+                print(">> ", opcode.name)
+                evalstack.dmul()
+
+            elif opcode.name == "DDIV":
+                print(">> ", opcode.name)
+                evalstack.ddiv()
+
+            elif opcode.name == "DNEG":
+                print(">> ", opcode.name)
+                evalstack.dneg()
+
+            elif opcode.name == "DREM":
+                print(">> ", opcode.name)
+                evalstack.drem()
+
+            elif opcode.name == "DCONST_0":
+                print(">> ", opcode.name)
+                evalstack.dconst(0)
+
+            elif opcode.name == "DCONST_1":
+                print(">> ", opcode.name)
+                evalstack.dconst(1)
+
+            elif opcode.name == "DLOAD":
+                print(">> ", opcode.name)
+                index = toint(bytecode[offset])
+                evalstack.push(lvars.dload(index))
+                offset += 1
+
+            elif opcode.name == "DLOAD_0":
+                print(">> ", opcode.name)
+                evalstack.push(lvars.dload(0))
+
+            elif opcode.name == "DLOAD_1":
+                print(">> ", opcode.name)
+                evalstack.push(lvars.dload(1))
+
+            elif opcode.name == "DLOAD_2":
+                print(">> ", opcode.name)
+                evalstack.push(lvars.dload(2))
+
+            elif opcode.name == "DLOAD_3":
+                print(">> ", opcode.name)
+                evalstack.push(lvars.dload(3))
+
+            elif opcode.name == "DRETURN":
+                print(">> ", opcode.name)
+                print(evalstack)
+                return evalstack.pop()
+
+            elif opcode.name == "DSTORE":
+                print(">> ", opcode.name)
+                index = toint(bytecode[offset])
+                lvars.store(index, evalstack.pop())
+                offset += 1
+
+            elif opcode.name == "DSTORE_0":
+                print(">> ", opcode.name)
+                lvars.store(0, evalstack.pop())
+
+            elif opcode.name == "DSTORE_1":
+                print(">> ", opcode.name)
+                lvars.store(1, evalstack.pop())
+
+            elif opcode.name == "DSTORE_2":
+                print(">> ", opcode.name)
+                lvars.store(2, evalstack.pop())
+
+            elif opcode.name == "DSTORE_3":
+                print(">> ", opcode.name)
+                lvars.store(3, evalstack.pop())
 
             elif opcode.name == "DUP":
                 print(">> ", opcode.name)
-                pass
+                evalstack.dup()
+
+            elif opcode.name == "DUP2":
+                print(">> ", opcode.name)
+                evalstack.dup2()
 
             elif opcode.name == "DUP_X1":
                 print(">> ", opcode.name)
+                # TODO
                 pass
 
             elif opcode.name == "GETFIELD":
@@ -348,13 +375,14 @@ class Intrptr(object):
 
             elif opcode.name == "IRETURN":
                 print(">> ", opcode.name)
-                print (evalstack)
-                pyvalue = evalstack.pop()
-                return pyvalue
+                print(evalstack)
+                return evalstack.pop()
 
             elif opcode.name == "ISTORE":
                 print(">> ", opcode.name)
-                pass
+                index = toint(bytecode[offset])
+                lvars.store(index, evalstack.pop())
+                offset += 1
 
             elif opcode.name == "ISTORE_0":
                 print(">> ", opcode.name)
@@ -388,6 +416,7 @@ class Intrptr(object):
 
             elif opcode.name == "NEW":
                 print(">> ", opcode.name)
+                #TODO
                 pass
 
             elif opcode.name == "JSR":

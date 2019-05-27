@@ -69,8 +69,59 @@ class IntrptEvalStack(object):
     def push(self, pyvalue: PyVMValue) -> None:
         self.stack.append(pyvalue)
 
+    def dadd(self) -> None:
+        val1 = self.stack.pop()
+        val2 = self.stack.pop()
+        pyvalue = PyVMValue.pydouble(val2.value + val1.value)
+        self.stack.append(pyvalue)
+
+    def dsub(self) -> None:
+        val1 = self.stack.pop()
+        val2 = self.stack.pop()
+        pyvalue = PyVMValue.pydouble(val2.value - val1.value)
+        self.stack.append(pyvalue)
+
+    def dmul(self) -> None:
+        val1 = self.stack.pop()
+        val2 = self.stack.pop()
+        pyvalue = PyVMValue.pydouble(val1.value * val2.value)
+        self.stack.append(pyvalue)
+
+    def ddiv(self):
+        val1 = self.stack.pop()
+        val2 = self.stack.pop()
+        pyvalue = PyVMValue.pydouble(val2.value // val1.value)
+        self.stack.append(pyvalue)
+
+    def dneg(self) -> None:
+        val1 = self.stack.pop()
+        pyvalue = PyVMValue.pydouble(-1 * val1.value)
+        self.stack.append(pyvalue)
+
+    def drem(self) -> None:
+        val1 = self.stack.pop()
+        val2 = self.stack.pop()
+        pyvalue = PyVMValue.pydouble(val2.value % val1.value)
+        self.stack.append(pyvalue)
+
+    def dconst(self, value):
+        pyvalue = PyVMValue.pydouble(value)
+        self.stack.append(pyvalue)
+
+    def dup(self):
+        val = self.stack.pop()
+        self.stack.append(val)
+        self.stack.append(val)
+
+    def dup2(self):
+        #FIXME
+        val = self.stack.pop()
+        self.stack.append(val)
+        self.stack.append(val)
+
     def __str__(self) -> str:
         return "IntrptEvalStack(stack={})".format(self.stack)
 
     def __repr__(self) -> str:
         return self.__str__()
+

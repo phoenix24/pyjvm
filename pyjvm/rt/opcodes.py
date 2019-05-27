@@ -19,8 +19,12 @@ OPCODES = {
     0x4c    :   PyOpCode("ASTORE_1",    0x4c),
     0x10    :   PyOpCode("BIPUSH",      0x10, 1),
     0xca    :   PyOpCode("BREAKPOINT",  0xca),
-
-    0x63    :   PyOpCode("DADD",        0x63), #??
+    0x63    :   PyOpCode("DADD",        0x63),
+    0x67    :   PyOpCode("DSUB",        0x67),
+    0x6b    :   PyOpCode("DMUL",        0x6b),
+    0x6f    :   PyOpCode("DDIV",        0x6f),
+    0x77    :   PyOpCode("DNEG",        0x77),
+    0x73    :   PyOpCode("DREM",        0x73),
     0x0e    :   PyOpCode("DCONST_0",    0x0e), #?
     0x0f    :   PyOpCode("DCONST_1",    0x0f), #?
     0x18    :   PyOpCode("DLOAD",       0x18, 1),
@@ -34,14 +38,15 @@ OPCODES = {
     0x48    :   PyOpCode("DSTORE_1",    0x48),
     0x49    :   PyOpCode("DSTORE_2",    0x49),
     0x4a    :   PyOpCode("DSTORE_3",    0x4a),
-    0x67    :   PyOpCode("DSUB",        0x67),
-
     0x59    :   PyOpCode("DUP",         0x59),
     0x5a    :   PyOpCode("DUP_X1",      0x5a),
+    0x5b    :   PyOpCode("DUP_X2",      0x5b),
+    0x5c    :   PyOpCode("DUP2",        0x5c),
+    0x5d    :   PyOpCode("DUP2_X1",     0x5d),
+    0x5e    :   PyOpCode("DUP2_X2",     0x5e),
     0xb4    :   PyOpCode("GETFIELD",    0xb4, 2),
     0xb2    :   PyOpCode("GETSTATIC",   0xb2, 2),
     0xa7    :   PyOpCode("GOTO",        0xa7, 2),
-    
     0x87    :   PyOpCode("I2D",         0x87),
     0x60    :   PyOpCode("IADD",        0x60),
     0x7e    :   PyOpCode("IAND",        0x7e),

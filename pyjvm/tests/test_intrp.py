@@ -45,7 +45,7 @@ class TestInterptrSampleInvoke(unittest.TestCase):
         self.assertEqual(result.type, PyVMType.I)
 
 
-class TestInterptrSampleInvokeTest(unittest.TestCase):
+class TestInterptrSampleIntTest(unittest.TestCase):
 
     def setUp(self):
         bytecode = FileReader.read("java/SampleInvoke1.class")
@@ -289,7 +289,6 @@ class TestInterptrSampleInvokeTest(unittest.TestCase):
         self.assertEqual(result.type, PyVMType.I)
 
     def test_ifelse4(self):
-        print(self.pyklass.methods)
         method = self.pyklass.get_method("ifelse4:()I")
         self.assertEqual(method.signature, '()I')
         self.assertEqual(method.num_params, 0)
@@ -297,3 +296,120 @@ class TestInterptrSampleInvokeTest(unittest.TestCase):
         result = self.intrptr.execute(method)
         self.assertEqual(result.value, 4)
         self.assertEqual(result.type, PyVMType.I)
+
+
+class TestInterptrSampleDoubleTest(unittest.TestCase):
+
+    def setUp(self):
+        bytecode = FileReader.read("java/SampleInvoke2.class")
+        parser = PyParser(bytecode).parse()
+        self.pyklass = parser.build()
+        repo = SharedRepo()
+        repo.add(klass=self.pyklass)
+        self.intrptr = Intrptr(repo)
+
+    def test_add(self):
+        method = self.pyklass.get_method("add:(DD)D")
+        self.assertEqual(method.signature, "(DD)D")
+        self.assertEqual(method.num_params, 2)
+
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(0),
+            PyVMValue.pyint(3),
+            PyVMValue.pyint(0),
+            PyVMValue.pyint(2),
+        ]))
+        self.assertEqual(result.value, 5)
+        self.assertEqual(result.type, PyVMType.D)
+
+    def test_sub(self):
+        method = self.pyklass.get_method("sub:(DD)D")
+        self.assertEqual(method.signature, "(DD)D")
+        self.assertEqual(method.num_params, 2)
+
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(0),
+            PyVMValue.pyint(3),
+            PyVMValue.pyint(0),
+            PyVMValue.pyint(2),
+        ]))
+        self.assertEqual(result.value, 1)
+        self.assertEqual(result.type, PyVMType.D)
+
+    def test_mul(self):
+        method = self.pyklass.get_method("mul:(DD)D")
+        self.assertEqual(method.signature, "(DD)D")
+        self.assertEqual(method.num_params, 2)
+
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(0),
+            PyVMValue.pyint(3),
+            PyVMValue.pyint(0),
+            PyVMValue.pyint(2),
+        ]))
+        self.assertEqual(result.value, 6)
+        self.assertEqual(result.type, PyVMType.D)
+
+    def test_div(self):
+        method = self.pyklass.get_method("div:(DD)D")
+        self.assertEqual(method.signature, "(DD)D")
+        self.assertEqual(method.num_params, 2)
+
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(0),
+            PyVMValue.pyint(3),
+            PyVMValue.pyint(0),
+            PyVMValue.pyint(2),
+        ]))
+        self.assertEqual(result.value, 1)
+        self.assertEqual(result.type, PyVMType.D)
+
+    def test_rem(self):
+        method = self.pyklass.get_method("rem:(DD)D")
+        self.assertEqual(method.signature, "(DD)D")
+        self.assertEqual(method.num_params, 2)
+
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(0),
+            PyVMValue.pyint(5),
+            PyVMValue.pyint(0),
+            PyVMValue.pyint(3),
+        ]))
+        self.assertEqual(result.value, 2)
+        self.assertEqual(result.type, PyVMType.D)
+
+    def test_neg(self):
+        method = self.pyklass.get_method("neg:(D)D")
+        self.assertEqual(method.signature, "(D)D")
+        self.assertEqual(method.num_params, 1)
+
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(0),
+            PyVMValue.pyint(5),
+        ]))
+        self.assertEqual(result.value, -5)
+        self.assertEqual(result.type, PyVMType.D)
+
+    def test_inc1(self):
+        method = self.pyklass.get_method("inc1:(D)D")
+        self.assertEqual(method.signature, "(D)D")
+        self.assertEqual(method.num_params, 1)
+
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(0),
+            PyVMValue.pyint(5),
+        ]))
+        self.assertEqual(result.value, 5)
+        self.assertEqual(result.type, PyVMType.D)
+
+    def test_inc2(self):
+        method = self.pyklass.get_method("inc2:(D)D")
+        self.assertEqual(method.signature, "(D)D")
+        self.assertEqual(method.num_params, 1)
+
+        result = self.intrptr.execute(method, IntrptVars([
+            PyVMValue.pyint(0),
+            PyVMValue.pyint(5),
+        ]))
+        self.assertEqual(result.value, 6)
+        self.assertEqual(result.type, PyVMType.D)
