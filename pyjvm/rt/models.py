@@ -21,7 +21,7 @@ class PyVMValue(object):
     
     def copy(self, value=None, type=None):
         type = type or self.type
-        value = value or self.value
+        value = value if (value is not None) else self.value
         return PyVMValue(type, value)
 
     def clone(self):
@@ -53,6 +53,14 @@ class PyVMValue(object):
 
     def __neg__(self) -> 'PyVMValue':
         value = -1 * self.value
+        return self.copy(value=value)
+
+    def __lshift__(self, val) -> 'PyVMValue':
+        value = self.value << val
+        return self.copy(value=value)
+
+    def __rshift__(self, val) -> 'PyVMValue':
+        value = self.value >> val
         return self.copy(value=value)
 
     def __add__(self, other: 'PyVMValue') -> 'PyVMValue':
