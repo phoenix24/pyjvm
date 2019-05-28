@@ -233,7 +233,7 @@ class Intrptr(object):
                 val1 = evalstack.pop()
                 val2 = evalstack.pop()
                 jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1])
-                if (val1.value == val2.value): offset += (jump - 1)
+                if (val1 == val2): offset += (jump - 1)
                 offset += 2
 
             elif opcode.name == "IF_ICMPNE":
@@ -241,7 +241,7 @@ class Intrptr(object):
                 val1 = evalstack.pop()
                 val2 = evalstack.pop()
                 jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
-                offset += jump if (val1.value != val2.value) else 2
+                offset += jump if (val1 != val2) else 2
 
             elif opcode.name == "IF_ICMPLT":
                 print(">> ", opcode.name)
@@ -252,18 +252,21 @@ class Intrptr(object):
                 val1 = evalstack.pop()
                 val2 = evalstack.pop()
                 jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
-                offset += jump if (val1.value >= val2.value) else 2
+                offset += jump if (val1 >= val2) else 2
 
             elif opcode.name == "IF_ICMPGT":
                 print(">> ", opcode.name)
-                pass
+                val1 = evalstack.pop()
+                val2 = evalstack.pop()
+                jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
+                offset += jump if (val1 > val2) else 2
 
             elif opcode.name == "IF_ICMPLE":
                 print(">> ", opcode.name)
                 val1 = evalstack.pop()
                 val2 = evalstack.pop()
                 jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
-                offset += jump if (val1.value <= val2.value) else 2
+                offset += jump if (val1 <= val2) else 2
 
             elif opcode.name == "IF_ICMPEQ":
                 print(">> ", opcode.name)

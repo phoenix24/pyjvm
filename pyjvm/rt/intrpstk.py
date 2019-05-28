@@ -1,9 +1,10 @@
 from .models import PyVMValue, PyVMType
+from typing import List, Dict, Sequence, Mapping
 
 
 class IntrptEvalStack(object):
     def __init__(self):
-        self.stack = []
+        self.stack: List[PyVMValue] = []
 
     def aconst_null(self):
         self.stack.append(PyVMValue(PyVMType.A, 0))
@@ -104,16 +105,16 @@ class IntrptEvalStack(object):
         pyvalue = PyVMValue.pydouble(val2.value % val1.value)
         self.stack.append(pyvalue)
 
-    def dconst(self, value):
+    def dconst(self, value) -> None:
         pyvalue = PyVMValue.pydouble(value)
         self.stack.append(pyvalue)
 
-    def dup(self):
+    def dup(self) -> None:
         val = self.stack.pop()
         self.stack.append(val)
         self.stack.append(val)
 
-    def dup2(self):
+    def dup2(self) -> None:
         #FIXME
         val = self.stack.pop()
         self.stack.append(val)

@@ -34,6 +34,35 @@ class PyVMValue(object):
     def pydouble(value: float):
         return PyVMValue(PyVMType.D, value)
 
+    def __type__(self, other: 'PyVMValue'):
+        return isinstance(other, PyVMValue) \
+            and self.type == other.type
+
+
+
+    def __eq__(self, other: 'PyVMValue') -> bool:
+        return self.__type__(other) \
+            and self.value == other.value
+
+    def __ne__(self, other: 'PyVMValue'):
+        return not self.__eq__(other)
+
+    def __lt__(self, other: 'PyVMValue'):
+        return self.__type__(other) \
+            and self.value < other.value
+
+    def __le__(self, other: 'PyVMValue'):
+        return self.__type__(other) \
+            and self.value <= other.value
+
+    def __gt__(self, other: 'PyVMValue'):
+        return self.__type__(other) \
+            and self.value > other.value
+
+    def __ge__(self, other: 'PyVMValue'):
+        return self.__type__(other) \
+            and self.value >= other.value
+
     def __str__(self):
         return "PyVMValue(type={}, value={})".format(self.type, self.value)
 
@@ -81,38 +110,38 @@ class PyVMKlass(object):
         self.methods = {}
         self.methodsByIndex = {}
 
-    def add_defined_method(self, method):
+    def add_defined_method(self, method: 'PyVMMethod') -> None:
         self.methods.update({method.name_type: method})
 
-    def add_defined_field(self, field):
+    def add_defined_field(self, field) -> None:
         self.fields.update({field.name: field})
 
-    def add_field(self, field):
+    def add_field(self, field: 'PyVMField') -> None:
         self.fields.update({field.name: field})
         if field.flags & PyVMKonst.ACC_STATIC:
             self.staticFieldByName.update({field.name: None})
         else:
             self.orderedFields.append(field)
 
-    def add_klass_ref(self, index: int, name: str):
+    def add_klass_ref(self, index: int, name: str) -> None:
         self.klassByIndex.update({index: name})
 
-    def add_field_ref(self, index: int, name: str):
+    def add_field_ref(self, index: int, name: str) -> None:
         self.fieldsByIndex.update(({index: name}))
 
-    def add_method_ref(self, index: int, name: str):
+    def add_method_ref(self, index: int, name: str) -> None:
         self.methodsByIndex.update({index: name})
 
     def get_fields(self) -> List[str]:
         return list(self.fields.keys())
 
-    def get_method(self, name: str):
+    def get_method(self, name: str) -> 'PyVMMethod':
         return self.methods[name]
 
     def get_methods(self) -> List[str]:
         return list(self.methods.keys())
 
-    def get_method_by_idx(self, index: int):
+    def get_method_by_idx(self, index: int) -> 'PyVMMethod':
         return self.methodsByIndex[index]
 
 
