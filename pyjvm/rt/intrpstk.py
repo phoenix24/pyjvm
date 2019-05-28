@@ -3,8 +3,8 @@ from typing import List, Dict, Sequence, Mapping
 
 
 class IntrptEvalStack(object):
-    def __init__(self):
-        self.stack: List[PyVMValue] = []
+    def __init__(self, stack=None):
+        self.stack: List[PyVMValue] = stack or []
 
     def aconst_null(self):
         self.stack.append(PyVMValue(PyVMType.A, 0))
@@ -48,7 +48,7 @@ class IntrptEvalStack(object):
         val2 = self.stack.pop()
         self.stack.append(val1 & val2)
 
-    def iconst(self, value) -> None:
+    def iconst(self, value: int) -> None:
         pyvalue = PyVMValue.pyint(value)
         self.stack.append(pyvalue)
 
@@ -87,7 +87,7 @@ class IntrptEvalStack(object):
         val2 = self.stack.pop()
         self.stack.append(val2 % val1)
 
-    def dconst(self, value) -> None:
+    def dconst(self, value: float) -> None:
         pyvalue = PyVMValue.pydouble(value)
         self.stack.append(pyvalue)
 
@@ -101,6 +101,9 @@ class IntrptEvalStack(object):
         val = self.stack.pop()
         self.stack.append(val)
         self.stack.append(val)
+
+    def size(self):
+        return len(self.stack)
 
     def __str__(self) -> str:
         return "IntrptEvalStack(stack={})".format(self.stack)
