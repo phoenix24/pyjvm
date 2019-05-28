@@ -19,7 +19,12 @@ class PyVMValue(object):
         self.type = type
         self.value = value
     
-    def copy(self):
+    def copy(self, value=None, type=None):
+        type = type or self.type
+        value = value or self.value
+        return PyVMValue(type, value)
+
+    def clone(self):
         return PyVMValue(self.type, self.value)
 
     @staticmethod
@@ -38,7 +43,41 @@ class PyVMValue(object):
         return isinstance(other, PyVMValue) \
             and self.type == other.type
 
+    def __or__(self, other: 'PyVMValue') -> 'PyVMValue':
+        value = self.value | other.value
+        return self.copy(value=value)
 
+    def __and__(self, other: 'PyVMValue') -> 'PyVMValue':
+        value = self.value & other.value
+        return self.copy(value=value)
+
+    def __neg__(self) -> 'PyVMValue':
+        value = -1 * self.value
+        return self.copy(value=value)
+
+    def __add__(self, other: 'PyVMValue') -> 'PyVMValue':
+        value = self.value + other.value
+        return self.copy(value=value)
+
+    def __sub__(self, other: 'PyVMValue') -> 'PyVMValue':
+        value = self.value - other.value
+        return self.copy(value=value)
+
+    def __mul__(self, other: 'PyVMValue') -> 'PyVMValue':
+        value = self.value * other.value
+        return self.copy(value=value)
+
+    def __mod__(self, other: 'PyVMValue') -> 'PyVMValue':
+        value = self.value % other.value
+        return self.copy(value=value)
+
+    def __truediv__(self, other: 'PyVMValue') -> 'PyVMValue':
+        value = self.value / other.value
+        return self.copy(value=value)
+
+    def __floordiv__(self, other: 'PyVMValue') -> 'PyVMValue':
+        value = self.value // other.value
+        return self.copy(value=value)
 
     def __eq__(self, other: 'PyVMValue') -> bool:
         return self.__type__(other) \

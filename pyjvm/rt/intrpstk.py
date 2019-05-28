@@ -12,53 +12,41 @@ class IntrptEvalStack(object):
     def iadd(self) -> None:
         val1 = self.stack.pop()
         val2 = self.stack.pop()
-        result = val1.value + val2.value
-        pyvalue = PyVMValue.pyint(result)
-        self.stack.append(pyvalue)
+        self.stack.append(val1 + val2)
 
     def isub(self) -> None:
         val1 = self.stack.pop()
         val2 = self.stack.pop()
-        result = val2.value - val1.value
-        pyvalue = PyVMValue.pyint(result)
-        self.stack.append(pyvalue)
+        self.stack.append(val2 - val1)
 
     def imul(self) -> None:
         val1 = self.stack.pop()
         val2 = self.stack.pop()
-        result = val1.value * val2.value
-        pyvalue = PyVMValue.pyint(result)
-        self.stack.append(pyvalue)
+        self.stack.append(val1 * val2)
 
     def idiv(self) -> None:
         val1 = self.stack.pop()
         val2 = self.stack.pop()
-        result = val2.value // val1.value
-        pyvalue = PyVMValue.pyint(result)
-        self.stack.append(pyvalue)
+        self.stack.append(val2 // val1)
 
     def irem(self):
         val1 = self.stack.pop()
         val2 = self.stack.pop()
-        pyvalue = PyVMValue.pyint(val2.value % val1.value)
-        self.stack.append(pyvalue)
+        self.stack.append(val2 % val1)
 
     def ior(self):
         val1 = self.stack.pop()
         val2 = self.stack.pop()
-        pyvalue = PyVMValue.pyint(val1.value | val2.value)
-        self.stack.append(pyvalue)
+        self.stack.append(val1 | val2)
 
     def ineg(self):
         val1 = self.stack.pop()
-        pyvalue = PyVMValue.pyint(-1 * val1.value)
-        self.stack.append(pyvalue)
+        self.stack.append(-val1)
 
     def iand(self):
         val1 = self.stack.pop()
         val2 = self.stack.pop()
-        pyvalue = PyVMValue.pyint(val1.value & val2.value)
-        self.stack.append(pyvalue)
+        self.stack.append(val1 & val2)
 
     def iconst(self, value) -> None:
         pyvalue = PyVMValue.pyint(value)
@@ -73,37 +61,31 @@ class IntrptEvalStack(object):
     def dadd(self) -> None:
         val1 = self.stack.pop()
         val2 = self.stack.pop()
-        pyvalue = PyVMValue.pydouble(val2.value + val1.value)
-        self.stack.append(pyvalue)
+        self.stack.append(val1 + val2)
 
     def dsub(self) -> None:
         val1 = self.stack.pop()
         val2 = self.stack.pop()
-        pyvalue = PyVMValue.pydouble(val2.value - val1.value)
-        self.stack.append(pyvalue)
+        self.stack.append(val2 - val1)
 
     def dmul(self) -> None:
         val1 = self.stack.pop()
         val2 = self.stack.pop()
-        pyvalue = PyVMValue.pydouble(val1.value * val2.value)
-        self.stack.append(pyvalue)
+        self.stack.append(val2 * val1)
 
     def ddiv(self):
         val1 = self.stack.pop()
         val2 = self.stack.pop()
-        pyvalue = PyVMValue.pydouble(val2.value // val1.value)
-        self.stack.append(pyvalue)
+        self.stack.append(val2 // val1)
 
     def dneg(self) -> None:
         val1 = self.stack.pop()
-        pyvalue = PyVMValue.pydouble(-1 * val1.value)
-        self.stack.append(pyvalue)
+        self.stack.append(-val1)
 
     def drem(self) -> None:
         val1 = self.stack.pop()
         val2 = self.stack.pop()
-        pyvalue = PyVMValue.pydouble(val2.value % val1.value)
-        self.stack.append(pyvalue)
+        self.stack.append(val2 % val1)
 
     def dconst(self, value) -> None:
         pyvalue = PyVMValue.pydouble(value)

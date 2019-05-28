@@ -12,14 +12,15 @@ class IntrptVars(object):
         return self.__str__()
 
     def iload(self, index: int) -> PyVMValue:
-        return self.args[index].copy()
+        pyvalue: PyVMValue = self.args[index]
+        return pyvalue.clone()
 
     def store(self, index: int, value: PyVMValue) -> None:
         self.args[index] = value
 
     def dload(self, index: int):
-        p1 = self.args[index].copy()
-        p2 = self.args[index + 1].copy()
+        p1: PyVMValue = self.args[index].clone()
+        p2: PyVMValue = self.args[index + 1].clone()
         return PyVMValue.pydouble((p1.value << 8) + p2.value)
 
     def iinc(self, offset, amount):
