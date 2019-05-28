@@ -139,3 +139,112 @@ class TestEvalStack(TestBase):
         self.assertPyVMInt(val, 10)
         self.assertEqual(stack.size(), 0)
 
+    def test_dadd(self):
+        stack = IntrptEvalStack()
+        stack.push(PyVMValue.pydouble(10))
+        stack.push(PyVMValue.pydouble(20))
+        self.assertEqual(stack.size(), 2)
+
+        stack.dadd()
+        self.assertEqual(stack.size(), 1)
+
+        val = stack.pop()
+        self.assertPyVMDouble(val, 30)
+        self.assertEqual(stack.size(), 0)
+
+    def test_dsub(self):
+        stack = IntrptEvalStack()
+        stack.push(PyVMValue.pydouble(10))
+        stack.push(PyVMValue.pydouble(20))
+        self.assertEqual(stack.size(), 2)
+
+        stack.dsub()
+        self.assertEqual(stack.size(), 1)
+
+        val = stack.pop()
+        self.assertPyVMDouble(val, -10)
+        self.assertEqual(stack.size(), 0)
+
+    def test_dmul(self):
+        stack = IntrptEvalStack()
+        stack.push(PyVMValue.pydouble(10))
+        stack.push(PyVMValue.pydouble(20))
+        self.assertEqual(stack.size(), 2)
+
+        stack.dmul()
+        self.assertEqual(stack.size(), 1)
+
+        val = stack.pop()
+        self.assertPyVMDouble(val, 200)
+        self.assertEqual(stack.size(), 0)
+
+    def test_ddiv(self):
+        stack = IntrptEvalStack()
+        stack.push(PyVMValue.pydouble(10))
+        stack.push(PyVMValue.pydouble(20))
+        self.assertEqual(stack.size(), 2)
+
+        stack.ddiv()
+        self.assertEqual(stack.size(), 1)
+
+        val = stack.pop()
+        self.assertPyVMDouble(val, 0)
+        self.assertEqual(stack.size(), 0)
+
+        stack.push(PyVMValue.pydouble(20))
+        stack.push(PyVMValue.pydouble(10))
+        self.assertEqual(stack.size(), 2)
+
+        stack.ddiv()
+        self.assertEqual(stack.size(), 1)
+
+        val = stack.pop()
+        self.assertPyVMDouble(val, 2)
+        self.assertEqual(stack.size(), 0)
+
+    def test_drem(self):
+        stack = IntrptEvalStack()
+        stack.push(PyVMValue.pydouble(5))
+        stack.push(PyVMValue.pydouble(3))
+        self.assertEqual(stack.size(), 2)
+
+        stack.drem()
+        self.assertEqual(stack.size(), 1)
+
+        val = stack.pop()
+        self.assertPyVMDouble(val, 2)
+        self.assertEqual(stack.size(), 0)
+
+        stack.push(PyVMValue.pydouble(3))
+        stack.push(PyVMValue.pydouble(5))
+        self.assertEqual(stack.size(), 2)
+
+        stack.drem()
+        self.assertEqual(stack.size(), 1)
+
+        val = stack.pop()
+        self.assertPyVMDouble(val, 3)
+        self.assertEqual(stack.size(), 0)
+
+    def test_dneg(self):
+        stack = IntrptEvalStack()
+        stack.push(PyVMValue.pydouble(10))
+        stack.push(PyVMValue.pydouble(20))
+        self.assertEqual(stack.size(), 2)
+
+        stack.dneg()
+        self.assertEqual(stack.size(), 2)
+
+        val = stack.pop()
+        self.assertPyVMDouble(val, -20)
+        self.assertEqual(stack.size(), 1)
+
+    def test_dconst(self):
+        stack = IntrptEvalStack()
+        stack.dconst(10)
+        self.assertEqual(stack.size(), 1)
+
+        val = stack.pop()
+        self.assertPyVMDouble(val, 10)
+        self.assertEqual(stack.size(), 0)
+
