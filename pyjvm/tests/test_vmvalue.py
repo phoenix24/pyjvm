@@ -1,46 +1,38 @@
 import unittest
+from .test_base import TestBase
 from pyjvm.rt.models import PyVMValue, PyVMType
 
 
-class TestPyVMValue(unittest.TestCase):
+class TestPyVMValue(TestBase):
 
     def test_operators1(self):
         val1 = PyVMValue.pyint(10)
         val2 = PyVMValue.pyint(20)
 
         result = (val1 + val2)
-        self.assertEqual(result.type, PyVMType.I)
-        self.assertEqual(result.value, 30)
+        self.assertPyVMInt(result, 30)
 
         result = (val1 - val2)
-        self.assertEqual(result.type, PyVMType.I)
-        self.assertEqual(result.value, -10)
+        self.assertPyVMInt(result, -10)
 
         result = (val1 * val2)
-        self.assertEqual(result.type, PyVMType.I)
-        self.assertEqual(result.value, 200)
+        self.assertPyVMInt(result, 200)
 
         result = (val1 / val2)
-        self.assertEqual(result.type, PyVMType.I)
-        self.assertEqual(result.value, 0.5)
-
-        result = (val1 % val2)
-        self.assertEqual(result.type, PyVMType.I)
-        self.assertEqual(result.value, 10)
-
-        result = (val2 % val1)
-        self.assertEqual(result.type, PyVMType.I)
-        self.assertEqual(result.value, 0)
+        self.assertPyVMFloat(result, 0.5)
 
         result = (val1 // val2)
-        self.assertEqual(result.type, PyVMType.I)
-        self.assertEqual(result.value, 0)
+        self.assertPyVMInt(result, 0)
 
-        result = val1 << 1
-        self.assertEqual(result.type, PyVMType.I)
-        self.assertEqual(result.value, 20)
+        result = (val2 % val1)
+        self.assertPyVMInt(result, 0)
+
+        result = (val1 % val2)
+        self.assertPyVMInt(result, 10)
 
         result = val1 >> 1
-        self.assertEqual(result.type, PyVMType.I)
-        self.assertEqual(result.value, 5)
+        self.assertPyVMInt(result, 5)
+
+        result = val1 << 1
+        self.assertPyVMInt(result, 20)
 

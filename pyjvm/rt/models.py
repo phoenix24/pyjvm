@@ -1,5 +1,7 @@
 from enum import Enum
-from typing import Mapping, List, Set
+from typing import Mapping, List, Set, TypeVar
+
+PyVMNumber = TypeVar('PyVMNumber', int, float)
 
 
 class PyVMType(Enum):
@@ -15,7 +17,7 @@ class PyVMType(Enum):
 
 
 class PyVMValue(object):
-    def __init__(self, type: PyVMType, value: int):
+    def __init__(self, type: PyVMType, value: PyVMNumber):
         self.type = type
         self.value = value
     
@@ -34,6 +36,10 @@ class PyVMValue(object):
     @staticmethod
     def pyint(value: int):
         return PyVMValue(PyVMType.I, value)
+
+    @staticmethod
+    def pyfloat(value: float):
+        return PyVMValue(PyVMType.F, value)
 
     @staticmethod
     def pydouble(value: float):
@@ -81,7 +87,7 @@ class PyVMValue(object):
 
     def __truediv__(self, other: 'PyVMValue') -> 'PyVMValue':
         value = self.value / other.value
-        return self.copy(value=value)
+        return PyVMValue(PyVMType.F, value)
 
     def __floordiv__(self, other: 'PyVMValue') -> 'PyVMValue':
         value = self.value // other.value

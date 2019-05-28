@@ -1,4 +1,5 @@
 import unittest
+from .test_base import TestBase
 from pyjvm.rt.models import PyVMValue, PyVMType
 from pyjvm.rt.intrptr import Intrptr
 from pyjvm.rt.intrpvars import IntrptVars
@@ -7,7 +8,7 @@ from pyjvm.utils.reader import FileReader
 from pyjvm.loader.parser import PyParser
 
 
-class TestInterptrSampleInvoke(unittest.TestCase):
+class TestInterptrSampleInvoke(TestBase):
 
     def setUp(self):
         bytecode = FileReader.read("java/SampleInvoke.class")
@@ -23,8 +24,7 @@ class TestInterptrSampleInvoke(unittest.TestCase):
         self.assertEqual(method.num_params, 0)
 
         result = self.intrptr.execute(method)
-        self.assertEqual(result.value, 7)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 7)
 
     def test_foo(self):
         method = self.pyklass.get_method("foo:()I")
@@ -32,8 +32,7 @@ class TestInterptrSampleInvoke(unittest.TestCase):
         self.assertEqual(method.num_params, 0)
 
         result = self.intrptr.execute(method)
-        self.assertEqual(result.value, 19)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 19)
 
     def test_too(self):
         method = self.pyklass.get_method("too:()I")
@@ -41,11 +40,10 @@ class TestInterptrSampleInvoke(unittest.TestCase):
         self.assertEqual(method.num_params, 0)
 
         result = self.intrptr.execute(method)
-        self.assertEqual(result.value, 26)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 26)
 
 
-class TestInterptrSampleIntTest(unittest.TestCase):
+class TestInterptrSampleIntTest(TestBase):
 
     def setUp(self):
         bytecode = FileReader.read("java/SampleInvoke1.class")
@@ -65,16 +63,14 @@ class TestInterptrSampleIntTest(unittest.TestCase):
             PyVMValue.pyint(1),
             PyVMValue.pyint(3),
         ]))
-        self.assertEqual(result.value, 4)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 4)
 
         # pass other vars.
         result = self.intrptr.execute(method, IntrptVars(args=[
             PyVMValue.pyint(100),
             PyVMValue.pyint(300),
         ]))
-        self.assertEqual(result.value, 400)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 400)
 
     def test_twod(self):
         method = self.pyklass.get_method("twod:()I")
@@ -82,8 +78,7 @@ class TestInterptrSampleIntTest(unittest.TestCase):
         self.assertEqual(method.num_params, 0)
 
         result = self.intrptr.execute(method)
-        self.assertEqual(result.value, 4)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 4)
 
     def test_mul(self):
         method = self.pyklass.get_method("mul:(II)I")
@@ -95,8 +90,7 @@ class TestInterptrSampleIntTest(unittest.TestCase):
             PyVMValue.pyint(2),
             PyVMValue.pyint(3),
         ]))
-        self.assertEqual(result.value, 6)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 6)
 
     def test_div(self):
         method = self.pyklass.get_method("div:(II)I")
@@ -108,8 +102,7 @@ class TestInterptrSampleIntTest(unittest.TestCase):
             PyVMValue.pyint(20),
             PyVMValue.pyint(5),
         ]))
-        self.assertEqual(result.value, 4)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 4)
 
     def test_rem(self):
         method = self.pyklass.get_method("rem:(II)I")
@@ -121,8 +114,7 @@ class TestInterptrSampleIntTest(unittest.TestCase):
             PyVMValue.pyint(20),
             PyVMValue.pyint(3),
         ]))
-        self.assertEqual(result.value, 2)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 2)
 
     def test_sub(self):
         method = self.pyklass.get_method("sub:(II)I")
@@ -134,8 +126,7 @@ class TestInterptrSampleIntTest(unittest.TestCase):
             PyVMValue.pyint(20),
             PyVMValue.pyint(5),
         ]))
-        self.assertEqual(result.value, 15)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 15)
 
     def test_inc1(self):
         method = self.pyklass.get_method("inc1:(I)I")
@@ -146,8 +137,7 @@ class TestInterptrSampleIntTest(unittest.TestCase):
         result = self.intrptr.execute(method, IntrptVars([
             PyVMValue.pyint(5),
         ]))
-        self.assertEqual(result.value, 5)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 5)
 
     def test_inc2(self):
         method = self.pyklass.get_method("inc2:(I)I")
@@ -158,8 +148,7 @@ class TestInterptrSampleIntTest(unittest.TestCase):
         result = self.intrptr.execute(method, IntrptVars([
             PyVMValue.pyint(5),
         ]))
-        self.assertEqual(result.value, 6)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 6)
 
     def test_neg(self):
         method = self.pyklass.get_method("neg:(I)I")
@@ -170,8 +159,7 @@ class TestInterptrSampleIntTest(unittest.TestCase):
         result = self.intrptr.execute(method, IntrptVars([
             PyVMValue.pyint(5),
         ]))
-        self.assertEqual(result.value, -5)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, -5)
 
     def test_or(self):
         method = self.pyklass.get_method("or:(II)I")
@@ -183,8 +171,7 @@ class TestInterptrSampleIntTest(unittest.TestCase):
             PyVMValue.pyint(20),
             PyVMValue.pyint(5),
         ]))
-        self.assertEqual(result.value, 21)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 21)
 
     def test_and(self):
         method = self.pyklass.get_method("and:(II)I")
@@ -196,8 +183,7 @@ class TestInterptrSampleIntTest(unittest.TestCase):
             PyVMValue.pyint(20),
             PyVMValue.pyint(5),
         ]))
-        self.assertEqual(result.value, 4)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 4)
 
     def test_calc1(self):
         method = self.pyklass.get_method("calc1:(II)I")
@@ -209,8 +195,7 @@ class TestInterptrSampleIntTest(unittest.TestCase):
             PyVMValue.pyint(15),
             PyVMValue.pyint(5),
         ]))
-        self.assertEqual(result.value, 100)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 100)
 
     @unittest.skip
     def test_soo(self):
@@ -219,8 +204,7 @@ class TestInterptrSampleIntTest(unittest.TestCase):
         self.assertEqual(method.num_params, 0)
 
         result = self.intrptr.execute(method)
-        self.assertEqual(result.value, 4)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 4)
 
     def test_ifeq(self):
         method = self.pyklass.get_method("ifeq:(II)I")
@@ -232,17 +216,14 @@ class TestInterptrSampleIntTest(unittest.TestCase):
             PyVMValue.pyint(4),
             PyVMValue.pyint(5),
         ]))
-
-        self.assertEqual(result.value, 5)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 5)
 
         # pass other vars.
         result = self.intrptr.execute(method, IntrptVars(args=[
             PyVMValue.pyint(300),
             PyVMValue.pyint(100),
         ]))
-        self.assertEqual(result.value, 100)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 100)
 
     def test_ifleq(self):
         method = self.pyklass.get_method("ifleq:(II)I")
@@ -254,17 +235,14 @@ class TestInterptrSampleIntTest(unittest.TestCase):
             PyVMValue.pyint(4),
             PyVMValue.pyint(5),
         ]))
-
-        self.assertEqual(result.value, 4)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 4)
 
         # pass other vars.
         result = self.intrptr.execute(method, IntrptVars(args=[
             PyVMValue.pyint(300),
             PyVMValue.pyint(100),
         ]))
-        self.assertEqual(result.value, 100)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 100)
 
     def test_ifgeq(self):
         method = self.pyklass.get_method("ifgeq:(II)I")
@@ -276,17 +254,14 @@ class TestInterptrSampleIntTest(unittest.TestCase):
             PyVMValue.pyint(4),
             PyVMValue.pyint(5),
         ]))
-
-        self.assertEqual(result.value, 5)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 5)
 
         # pass other vars.
         result = self.intrptr.execute(method, IntrptVars(args=[
             PyVMValue.pyint(300),
             PyVMValue.pyint(100),
         ]))
-        self.assertEqual(result.value, 300)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 300)
 
     def test_ifelse4(self):
         method = self.pyklass.get_method("ifelse4:()I")
@@ -294,11 +269,10 @@ class TestInterptrSampleIntTest(unittest.TestCase):
         self.assertEqual(method.num_params, 0)
 
         result = self.intrptr.execute(method)
-        self.assertEqual(result.value, 4)
-        self.assertEqual(result.type, PyVMType.I)
+        self.assertPyVMInt(result, 4)
 
 
-class TestInterptrSampleDoubleTest(unittest.TestCase):
+class TestInterptrSampleDoubleTest(TestBase):
 
     def setUp(self):
         bytecode = FileReader.read("java/SampleInvoke2.class")
@@ -319,8 +293,7 @@ class TestInterptrSampleDoubleTest(unittest.TestCase):
             PyVMValue.pyint(0),
             PyVMValue.pyint(2),
         ]))
-        self.assertEqual(result.value, 5)
-        self.assertEqual(result.type, PyVMType.D)
+        self.assertPyVMDouble(result, 5)
 
     def test_sub(self):
         method = self.pyklass.get_method("sub:(DD)D")
@@ -333,8 +306,7 @@ class TestInterptrSampleDoubleTest(unittest.TestCase):
             PyVMValue.pyint(0),
             PyVMValue.pyint(2),
         ]))
-        self.assertEqual(result.value, 1)
-        self.assertEqual(result.type, PyVMType.D)
+        self.assertPyVMDouble(result, 1)
 
     def test_mul(self):
         method = self.pyklass.get_method("mul:(DD)D")
@@ -347,8 +319,7 @@ class TestInterptrSampleDoubleTest(unittest.TestCase):
             PyVMValue.pyint(0),
             PyVMValue.pyint(2),
         ]))
-        self.assertEqual(result.value, 6)
-        self.assertEqual(result.type, PyVMType.D)
+        self.assertPyVMDouble(result, 6)
 
     def test_div(self):
         method = self.pyklass.get_method("div:(DD)D")
@@ -361,8 +332,7 @@ class TestInterptrSampleDoubleTest(unittest.TestCase):
             PyVMValue.pyint(0),
             PyVMValue.pyint(2),
         ]))
-        self.assertEqual(result.value, 1)
-        self.assertEqual(result.type, PyVMType.D)
+        self.assertPyVMDouble(result, 1)
 
     def test_rem(self):
         method = self.pyklass.get_method("rem:(DD)D")
@@ -375,8 +345,7 @@ class TestInterptrSampleDoubleTest(unittest.TestCase):
             PyVMValue.pyint(0),
             PyVMValue.pyint(3),
         ]))
-        self.assertEqual(result.value, 2)
-        self.assertEqual(result.type, PyVMType.D)
+        self.assertPyVMDouble(result, 2)
 
     def test_neg(self):
         method = self.pyklass.get_method("neg:(D)D")
@@ -387,8 +356,7 @@ class TestInterptrSampleDoubleTest(unittest.TestCase):
             PyVMValue.pyint(0),
             PyVMValue.pyint(5),
         ]))
-        self.assertEqual(result.value, -5)
-        self.assertEqual(result.type, PyVMType.D)
+        self.assertPyVMDouble(result, -5)
 
     def test_inc1(self):
         method = self.pyklass.get_method("inc1:(D)D")
@@ -399,8 +367,7 @@ class TestInterptrSampleDoubleTest(unittest.TestCase):
             PyVMValue.pyint(0),
             PyVMValue.pyint(5),
         ]))
-        self.assertEqual(result.value, 5)
-        self.assertEqual(result.type, PyVMType.D)
+        self.assertPyVMDouble(result, 5)
 
     def test_inc2(self):
         method = self.pyklass.get_method("inc2:(D)D")
@@ -411,5 +378,4 @@ class TestInterptrSampleDoubleTest(unittest.TestCase):
             PyVMValue.pyint(0),
             PyVMValue.pyint(5),
         ]))
-        self.assertEqual(result.value, 6)
-        self.assertEqual(result.type, PyVMType.D)
+        self.assertPyVMDouble(result, 6)
