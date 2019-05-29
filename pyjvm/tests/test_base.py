@@ -11,6 +11,9 @@ class TestBase(unittest.TestCase):
     def assertPyVMInt(self, actual: PyVMValue, expected: int) -> None:
         self.assertValue(actual, PyVMValue.pyint(expected))
 
+    def assertPyVMLong(self, actual: PyVMValue, expected: int) -> None:
+        self.assertValue(actual, PyVMValue.pylong(expected))
+
     def assertPyVMFloat(self, actual: PyVMValue, expected: float) -> None:
         self.assertValue(actual, PyVMValue.pyfloat(expected))
 

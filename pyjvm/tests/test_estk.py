@@ -290,3 +290,17 @@ class TestEvalStack(TestBase):
         self.assertEqual(stack.size(), 2)
         self.assertPyVMInt(stack.pop(), 10)
         self.assertPyVMInt(stack.pop(), 20)
+
+    def test_i2t(self):
+        stack = IntrptEvalStack()
+        stack.iconst(10)
+
+        stack.i2l()
+        self.assertPyVMLong(stack.peek(), 10)
+
+        stack.i2f()
+        self.assertPyVMFloat(stack.peek(), 10)
+
+        stack.i2d()
+        self.assertPyVMDouble(stack.peek(), 10)
+

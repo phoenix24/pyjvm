@@ -55,6 +55,9 @@ class IntrptEvalStack(object):
     def pop(self) -> PyVMValue: 
         return self.stack.pop()
 
+    def peek(self):
+        return self.stack[-1]
+
     def push(self, pyvalue: PyVMValue) -> None:
         self.stack.append(pyvalue)
 
@@ -118,9 +121,31 @@ class IntrptEvalStack(object):
     def size(self):
         return len(self.stack)
 
+    def __i2t(self, type: PyVMType):
+        val = self.stack.pop()
+        val = PyVMValue(type, val.value)
+        self.stack.append(val)
+
+    def i2b(self):
+        self.__i2t(PyVMType.B)
+
+    def i2d(self):
+        self.__i2t(PyVMType.D)
+
+    def i2c(self):
+        self.__i2t(PyVMType.C)
+
+    def i2f(self):
+        self.__i2t(PyVMType.F)
+
+    def i2l(self):
+        self.__i2t(PyVMType.J)
+
+    def i2s(self):
+        self.__i2t(PyVMType.S)
+
     def __str__(self) -> str:
         return "IntrptEvalStack(stack={})".format(self.stack)
 
     def __repr__(self) -> str:
         return self.__str__()
-
