@@ -248,3 +248,34 @@ class TestEvalStack(TestBase):
         self.assertPyVMDouble(val, 10)
         self.assertEqual(stack.size(), 0)
 
+    def test_dup(self):
+        stack = IntrptEvalStack()
+        stack.dconst(10)
+        self.assertEqual(stack.size(), 1)
+
+        stack.dup()
+        self.assertEqual(stack.size(), 2)
+        self.assertPyVMDouble(stack.pop(), 10)
+        self.assertPyVMDouble(stack.pop(), 10)
+
+    def test_dup2(self):
+        stack = IntrptEvalStack()
+        stack.dconst(10)
+        self.assertEqual(stack.size(), 1)
+
+        stack.dup2()
+        self.assertEqual(stack.size(), 2)
+        self.assertPyVMDouble(stack.pop(), 10)
+        self.assertPyVMDouble(stack.pop(), 10)
+
+    def test_dup_x1(self):
+        stack = IntrptEvalStack()
+        stack.iconst(10)
+        stack.iconst(20)
+        self.assertEqual(stack.size(), 2)
+
+        stack.dup_x1()
+        self.assertEqual(stack.size(), 3)
+        self.assertPyVMInt(stack.pop(), 20)
+        self.assertPyVMInt(stack.pop(), 10)
+        self.assertPyVMInt(stack.pop(), 20)

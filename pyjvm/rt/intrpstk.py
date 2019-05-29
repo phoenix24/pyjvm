@@ -102,6 +102,13 @@ class IntrptEvalStack(object):
         self.stack.append(val)
         self.stack.append(val)
 
+    def dup_x1(self):
+        val1 = self.stack.pop()
+        val2 = self.stack.pop()
+        self.stack.append(val1.clone())
+        self.stack.append(val2)
+        self.stack.append(val1)
+
     def size(self):
         return len(self.stack)
 
