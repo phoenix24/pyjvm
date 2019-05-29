@@ -109,6 +109,12 @@ class IntrptEvalStack(object):
         self.stack.append(val2)
         self.stack.append(val1)
 
+    def swap(self):
+        val1 = self.stack.pop()
+        val2 = self.stack.pop()
+        self.stack.append(val1)
+        self.stack.append(val2)
+
     def size(self):
         return len(self.stack)
 

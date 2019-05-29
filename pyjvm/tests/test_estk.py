@@ -279,3 +279,14 @@ class TestEvalStack(TestBase):
         self.assertPyVMInt(stack.pop(), 20)
         self.assertPyVMInt(stack.pop(), 10)
         self.assertPyVMInt(stack.pop(), 20)
+
+    def test_swap(self):
+        stack = IntrptEvalStack()
+        stack.iconst(10)
+        stack.iconst(20)
+        self.assertEqual(stack.size(), 2)
+
+        stack.swap()
+        self.assertEqual(stack.size(), 2)
+        self.assertPyVMInt(stack.pop(), 10)
+        self.assertPyVMInt(stack.pop(), 20)
