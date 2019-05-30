@@ -40,7 +40,7 @@ class PyParser(object):
         self._methods()
         return self
 
-    def build(self):
+    def build(self) -> PyVMKlass:
         klass = PyVMKlass(self.klass, self.super)
 
         for field in self.fields:
