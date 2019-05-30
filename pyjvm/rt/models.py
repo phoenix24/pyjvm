@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Mapping, List, Set, TypeVar
+from typing import Dict, List, Set, TypeVar
 
 PyVMNumber = TypeVar('PyVMNumber', int, float)
 
@@ -36,6 +36,10 @@ class PyVMValue(object):
     @staticmethod
     def pyint(value: int):
         return PyVMValue(PyVMType.I, value)
+
+    @staticmethod
+    def pylong(value: int):
+        return PyVMValue(PyVMType.J, value)
 
     @staticmethod
     def pyfloat(value: float):
@@ -149,19 +153,19 @@ class PyVMKonst(object):
 
 class PyVMKlass(object):
     def __init__(self, klass: str, super: str):
-        self.name = klass
-        self.super = super
+        self.name: str = klass
+        self.super: str = super
 
         self.items = {}
-        self.klassByIndex = {}
+        self.klassByIndex: Dict[int, str] = {}
 
-        self.fields = {}
-        self.fieldsByIndex = {}
-        self.orderedFields = []
-        self.staticFieldByName = {}
+        self.fields: Dict[str, PyVMField] = {}
+        self.fieldsByIndex: Dict[int, str] = {}
+        self.orderedFields: List[PyVMField] = []
+        self.staticFieldByName: Dict[str, PyVMValue] = {}
 
-        self.methods = {}
-        self.methodsByIndex = {}
+        self.methods: Dict[str, PyVMMethod] = {}
+        self.methodsByIndex: Dict[int, str] = {}
 
     def add_defined_method(self, method: 'PyVMMethod') -> None:
         self.methods.update({method.name_type: method})
@@ -176,6 +180,9 @@ class PyVMKlass(object):
         else:
             self.orderedFields.append(field)
 
+    def get_klass_by_idx(self, index) -> str:
+        return self.klassByIndex[index]
+
     def add_klass_ref(self, index: int, name: str) -> None:
         self.klassByIndex.update({index: name})
 
@@ -188,13 +195,28 @@ class PyVMKlass(object):
     def get_fields(self) -> List[str]:
         return list(self.fields.keys())
 
+    def get_fields_count(self) -> int:
+        return len(self.fields.keys())
+
+    def get_field_by_idx(self, index) -> str:
+        return self.fieldsByIndex[index]
+
+    def get_field_offset(self, field):
+        return 0 #TODO
+
+    def get_static_field(self, field: 'PyVMField') -> PyVMValue:
+        return self.staticFieldByName[field.name]
+
+    def set_static_field(self, name: str, value: PyVMValue) -> None:
+        self.staticFieldByName.update({name: value})
+
     def get_method(self, name: str) -> 'PyVMMethod':
         return self.methods[name]
 
     def get_methods(self) -> List[str]:
         return list(self.methods.keys())
 
-    def get_method_by_idx(self, index: int) -> 'PyVMMethod':
+    def get_method_by_idx(self, index: int) -> str:
         return self.methodsByIndex[index]
 
 
@@ -237,4 +259,24 @@ class PyVMMethod(object):
 
         return self.func_params
 
+
+class PyVMObject(object):
+
+    def __init__(self, id: int, _klazz: PyVMKlass):
+        self._id: int = id
+        self._klass: PyVMKlass = _klazz
+        self._fields: List[PyVMValue] = [None] * _klazz.get_fields_count()
+
+    @classmethod
+    def new(cls, klazz: PyVMKlass, _id: int):
+        object = PyVMObject(_id, klazz)
+        return object
+
+    def get_field(self, field: PyVMField):
+        offset = self._klass.get_field_offset(field)
+        return self._fields[offset]
+
+    def set_field(self, field: PyVMField, val: PyVMValue) -> None:
+        offset = self._klass.get_field_offset(field)
+        self._fields[offset] = val
 
