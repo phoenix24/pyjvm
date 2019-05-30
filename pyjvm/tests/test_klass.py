@@ -1,9 +1,10 @@
 import unittest
+from .test_base import TestBase
 from pyjvm.utils.reader import FileReader
 from pyjvm.loader.parser import PyParser
 
 
-class TestKlass(unittest.TestCase):
+class TestKlass(TestBase):
 
     def setUp(self):
         bytecode = FileReader.read("java/SampleInvoke.class")

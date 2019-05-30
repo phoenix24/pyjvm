@@ -19,3 +19,6 @@ class TestBase(unittest.TestCase):
 
     def assertPyVMDouble(self, actual: PyVMValue, expected: float) -> None:
         self.assertValue(actual, PyVMValue.pydouble(expected))
+
+    def assertPyVMType(self, actual: PyVMType, expected: int) -> None:
+        self.assertEqual(actual.value, expected)
