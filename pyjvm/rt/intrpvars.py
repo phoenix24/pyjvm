@@ -1,9 +1,12 @@
+from typing import List
 from pyjvm.rt.models import PyVMValue
+
+Args = List[PyVMValue]
 
 
 class IntrptVars(object):
     def __init__(self, args=None):
-        self.args = args or [None] * 256
+        self.args:Args = args or [None] * 256
 
     def __str__(self) -> str:
         return "IntrptVars(args={})".format(self.args)
@@ -26,3 +29,10 @@ class IntrptVars(object):
     def iinc(self, offset, amount):
         var = self.args[offset & 0xff]
         self.args[offset & 0xff] = PyVMValue.pyint(var.value + amount)
+
+    def aload(self, index: int) -> PyVMValue:
+        pyvalue: PyVMValue = self.args[index]
+        return pyvalue.clone()
+
+    def astore(self, index: int, value: PyVMValue) -> None:
+        self.args[index] = value
