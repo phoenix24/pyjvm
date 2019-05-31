@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Dict, List, Set, TypeVar
 
 PyVMNumber = TypeVar('PyVMNumber', int, float)
+PyObjFields = TypeVar('PyObjFields', List['PyVMValue'], List[None])
 
 
 class PyVMType(Enum):
@@ -219,13 +220,41 @@ class PyVMKlass(object):
     def get_method_by_idx(self, index: int) -> str:
         return self.methodsByIndex[index]
 
+    def __eq__(self, other):
+        return isinstance(other, PyVMKlass) \
+           and self.name == other.name \
+           and self.super == other.super \
+           and self.items == other.items \
+           and self.klassByIndex == other.klassByIndex \
+           and self.fields == other.fields \
+           and self.fieldsByIndex == other.fieldsByIndex \
+           and self.orderedFields == other.orderedFields \
+           and self.staticFieldByName == other.staticFieldByName \
+           and self.methods == other.methods \
+           and self.methodsByIndex == other.methodsByIndex
+
 
 class PyVMField(object):
-    def __init__(self, klass: PyVMKlass, name: str, type, flags: int):
+    def __init__(self, klass: PyVMKlass, name: str, type: PyVMType, flags: int):
         self.name = name
         self.type = type
         self.klass = klass
         self.flags = flags
+
+    def __str__(self):
+        return "PyVMField(name={}, type={}, klass={}, flags={}".format(
+            self.name, self.type, self.klass, self.flags
+        )
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __eq__(self, other):
+        return isinstance(other, PyVMField) \
+           and self.name == other.name \
+           and self.type == other.type \
+           and self.klass == other.klass \
+           and self.flags == other.flags
 
 
 class PyVMMethod(object):
@@ -263,9 +292,9 @@ class PyVMMethod(object):
 class PyVMObject(object):
 
     def __init__(self, id: int, _klazz: PyVMKlass):
-        self._id: int = id
-        self._klass: PyVMKlass = _klazz
-        self._fields: List[PyVMValue] = [None] * _klazz.get_fields_count()
+        self.idx: int = id
+        self.klass: PyVMKlass = _klazz
+        self.fields: PyObjFields = [None] * _klazz.get_fields_count()
 
     @classmethod
     def new(cls, klazz: PyVMKlass, _id: int):
@@ -273,10 +302,16 @@ class PyVMObject(object):
         return object
 
     def get_field(self, field: PyVMField):
-        offset = self._klass.get_field_offset(field)
-        return self._fields[offset]
+        offset = self.klass.get_field_offset(field)
+        return self.fields[offset]
 
     def set_field(self, field: PyVMField, val: PyVMValue) -> None:
-        offset = self._klass.get_field_offset(field)
-        self._fields[offset] = val
+        offset = self.klass.get_field_offset(field)
+        self.fields[offset] = val
+
+    def __eq__(self, other):
+        return isinstance(other, PyVMObject) \
+           and self.idx == other.idx \
+           and self.klass == other.klass \
+           and self.fields == other.fields
 
