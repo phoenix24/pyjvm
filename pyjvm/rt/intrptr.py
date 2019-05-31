@@ -1,17 +1,19 @@
-# :D
+from typing import List, Dict
 from .models import PyVMMethod, PyVMType, PyVMValue
-from .opcodes import OPCODES
+from .opcodes import OPCODES, PyOpCode
 from .intrpstk import IntrptEvalStack
 from .intrpvars import IntrptVars
 from .klassrepo import SharedRepo
+from .objheap import SimpleHeap
 from pyjvm.exception import PyIllegalOpcodeFound
 from pyjvm.utils.converter import toint, tostring
 
 
 class Intrptr(object):
     def __init__(self, repo: SharedRepo):
-        self.repo = repo
-        self.opcodes = OPCODES
+        self.repo: SharedRepo = repo
+        self.heap: SimpleHeap = SimpleHeap()
+        self.opcodes: Dict[int, PyOpCode] = OPCODES
 
     def __str__(self):
         return "Intrprtr :D"
@@ -41,15 +43,17 @@ class Intrptr(object):
 
             elif opcode.name == "ALOAD":
                 print(">> ", opcode.name)
-                evalstack.push()
+                index = toint(bytecode[offset])
+                evalstack.push(lvars.aload(index))
+                offset += 1
 
             elif opcode.name == "ALOAD_0":
                 print(">> ", opcode.name)
-                pass
+                evalstack.push(lvars.aload(0))
 
             elif opcode.name == "ALOAD_1":
                 print(">> ", opcode.name)
-                pass
+                evalstack.push(lvars.aload(1))
 
             elif opcode.name == "ARETURN":
                 print(">> ", opcode.name)
@@ -57,15 +61,17 @@ class Intrptr(object):
 
             elif opcode.name == "ASTORE":
                 print(">> ", opcode.name)
-                pass
+                index = toint(bytecode[offset])
+                lvars.astore(index, evalstack.pop())
+                offset += 1
 
             elif opcode.name == "ASTORE_0":
                 print(">> ", opcode.name)
-                pass
+                lvars.astore(0, evalstack.pop())
 
             elif opcode.name == "ASTORE_1":
                 print(">> ", opcode.name)
-                pass
+                lvars.astore(1, evalstack.pop())
 
             elif opcode.name == "BIPUSH":
                 print(">> ", opcode.name)
@@ -74,7 +80,6 @@ class Intrptr(object):
 
             elif opcode.name == "BREAKPOINT":
                 print(">> ", opcode.name)
-                pass
 
             elif opcode.name == "DADD":
                 print(">> ", opcode.name)
@@ -168,25 +173,36 @@ class Intrptr(object):
 
             elif opcode.name == "DUP_X1":
                 print(">> ", opcode.name)
-                # TODO
-                pass
-
-            elif opcode.name == "GETFIELD":
-                print(">> ", opcode.name)
-                pass
-
-            elif opcode.name == "GETSTATIC":
-                print(">> ", opcode.name)
-                pass
+                evalstack.dup_x1()
 
             elif opcode.name == "GOTO":
                 print(">> ", opcode.name)
                 jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
                 offset += jump
 
+            elif opcode.name == "I2B":
+                print(">> ", opcode.name)
+                evalstack.i2b()
+
+            elif opcode.name == "I2C":
+                print(">> ", opcode.name)
+                evalstack.i2c()
+
             elif opcode.name == "I2D":
                 print(">> ", opcode.name)
-                pass
+                evalstack.i2d()
+
+            elif opcode.name == "I2F":
+                print(">> ", opcode.name)
+                evalstack.i2f()
+
+            elif opcode.name == "I2L":
+                print(">> ", opcode.name)
+                evalstack.i2l()
+
+            elif opcode.name == "I2S":
+                print(">> ", opcode.name)
+                evalstack.i2s()
 
             elif opcode.name == "IADD":
                 print(">> ", opcode.name)
@@ -245,7 +261,10 @@ class Intrptr(object):
 
             elif opcode.name == "IF_ICMPLT":
                 print(">> ", opcode.name)
-                pass
+                val1 = evalstack.pop()
+                val2 = evalstack.pop()
+                jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
+                offset += jump if (val1 < val2) else 2
 
             elif opcode.name == "IF_ICMPGE":
                 print(">> ", opcode.name)
@@ -270,39 +289,59 @@ class Intrptr(object):
 
             elif opcode.name == "IF_ICMPEQ":
                 print(">> ", opcode.name)
-                pass
+                val1 = evalstack.pop()
+                val2 = evalstack.pop()
+                jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
+                offset += jump if (val1 == val2) else 2
 
             elif opcode.name == "IFEQ":
                 print(">> ", opcode.name)
-                pass
+                val1 = evalstack.pop()
+                jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
+                offset += jump if val1 == PyVMValue.pyint(0) else 2
 
             elif opcode.name == "IFGE":
                 print(">> ", opcode.name)
-                pass
+                val1 = evalstack.pop()
+                jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
+                offset += jump if val1 >= PyVMValue.pyint(0) else 2
 
             elif opcode.name == "IFGT":
                 print(">> ", opcode.name)
-                pass
+                val1 = evalstack.pop()
+                jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
+                offset += jump if val1 > PyVMValue.pyint(0) else 2
 
             elif opcode.name == "IFLE":
                 print(">> ", opcode.name)
-                pass
+                val1 = evalstack.pop()
+                jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
+                offset += jump if val1 <= PyVMValue.pyint(0) else 2
 
             elif opcode.name == "IFLT":
                 print(">> ", opcode.name)
-                pass
+                val1 = evalstack.pop()
+                jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
+                offset += jump if val1 < PyVMValue.pyint(0) else 2
 
             elif opcode.name == "IFNE":
                 print(">> ", opcode.name)
-                pass
+                val1 = evalstack.pop()
+                jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
+                offset += jump if val1 != PyVMValue.pyint(0) else 2
 
             elif opcode.name == "IFNONNULL":
                 print(">> ", opcode.name)
-                pass
+                val1 = evalstack.pop()
+                jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
+                #TODO: assert for reference type.
+                offset += jump if val1 != PyVMValue.pyint(0) else 2
 
             elif opcode.name == "IFNULL":
                 print(">> ", opcode.name)
-                pass
+                val1 = evalstack.pop()
+                jump = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1]) - 1
+                offset += jump if val1 == PyVMValue.pyint(0) else 2
 
             elif opcode.name == "IINC":
                 print(">> ", opcode.name)
@@ -315,8 +354,7 @@ class Intrptr(object):
             elif opcode.name == "ILOAD":
                 print(">> ", opcode.name)
                 index = toint(bytecode[offset])
-                value = lvars.iload(index)
-                evalstack.iconst(value)
+                evalstack.push(lvars.iload(index))
                 offset += 1
 
             elif opcode.name == "ILOAD_0":
@@ -337,11 +375,9 @@ class Intrptr(object):
 
             elif opcode.name == "IMPDEP1":
                 print(">> ", opcode.name)
-                pass
 
             elif opcode.name == "IMPDEP2":
                 print(">> ", opcode.name)
-                pass
 
             elif opcode.name == "IMUL":
                 print(">> ", opcode.name)
@@ -352,21 +388,25 @@ class Intrptr(object):
                 evalstack.ineg()
 
             elif opcode.name == "INVOKESPECIAL":
-                print(">> ", opcode.name)
-                pass
+                print(">> ", opcode.name, offset)
+                index = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1])
+                function = self.repo.lookupMethodExact(klass, index)
+                self.dispatch_invoke(function, evalstack)
+                offset += 2
 
             elif opcode.name == "INVOKESTATIC":
                 print(">> ", opcode.name, offset)
-                p1 = (toint(bytecode[offset + 0]) << 8)
-                p2 = (toint(bytecode[offset + 1]) << 0)
-                offset += 2
-                index = p1 + p2
-                function = self.repo.lookupMethodExact(klass, index) 
+                index = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1])
+                function = self.repo.lookupMethodExact(klass, index)
                 self.dispatch_invoke(function, evalstack)
+                offset += 2
 
             elif opcode.name == "INVOKEVIRTUAL":
-                print(">> ", opcode.name)
-                pass
+                print(">> ", opcode.name, offset)
+                index = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1])
+                function = self.repo.lookupMethodVirtual(klass, index)
+                self.dispatch_invoke(function, evalstack)
+                offset += 2
 
             elif opcode.name == "IOR":
                 print(">> ", opcode.name)
@@ -407,20 +447,22 @@ class Intrptr(object):
                 print(">> ", opcode.name)
                 evalstack.isub()
 
-            elif opcode.name == "MONITORENTER":
-                print(">> ", opcode.name)
-                #TODO
-                evalstack.pop()
-
             elif opcode.name == "MONITOREXIT":
                 print(">> ", opcode.name)
-                #TODO
+                #TODO: synchronized section end
+                evalstack.pop()
+
+            elif opcode.name == "MONITORENTER":
+                print(">> ", opcode.name)
+                #TODO: synchronized section start
                 evalstack.pop()
 
             elif opcode.name == "NEW":
                 print(">> ", opcode.name)
-                #TODO
-                pass
+                index = (toint(bytecode[offset]) << 8) + toint(bytecode[offset + 1])
+                klazz = self.repo.lookupKlass(klass, index)
+                value = PyVMValue.pyref(self.heap.allocate(klazz))
+                evalstack.push(value)
 
             elif opcode.name == "JSR":
                 print(">> ", opcode.name)
@@ -436,7 +478,6 @@ class Intrptr(object):
 
             elif opcode.name == "NOP":
                 print(">> ", opcode.name)
-                pass
 
             elif opcode.name == "POP":
                 print(">> ", opcode.name)
@@ -444,15 +485,44 @@ class Intrptr(object):
 
             elif opcode.name == "POP2":
                 print(">> ", opcode.name)
-                pass
+                val1 = evalstack.pop()
+                if (val1.type == PyVMType.D) or (val1.type == PyVMType.J):
+                    continue
+                evalstack.pop()
+
+            elif opcode.name == "GETFIELD":
+                print(">> ", opcode.name)
+                index = (toint(bytecode[offset]) << 8) + toint(bytecode[offset + 1])
+                field = self.repo.lookupField(klass, index)
+                receiver = evalstack.pop()
+                pyobject = self.heap.find(receiver.value)
+                evalstack.push(pyobject.get_field(field))
+                offset += 2
 
             elif opcode.name == "PUTFIELD":
                 print(">> ", opcode.name)
-                pass
+                index = (toint(bytecode[offset]) << 8) + toint(bytecode[offset + 1])
+                field = self.repo.lookupField(klass, index)
+                value = evalstack.pop()
+                receiver = evalstack.pop()
+                pyobject = self.heap.find(receiver.value)
+                pyobject.set_field(field, value)
+
+            elif opcode.name == "GETSTATIC":
+                print(">> ", opcode.name)
+                index = (toint(bytecode[offset]) << 8) + toint(bytecode[offset + 1])
+                field = self.repo.lookupField(klass, index)
+                klazz = field.klass
+                evalstack.push(klazz.get_static_field(field))
+                offset += 2
 
             elif opcode.name == "PUTSTATIC":
                 print(">> ", opcode.name)
-                pass
+                index = (toint(bytecode[offset]) << 8) + toint(bytecode[offset + 1])
+                field = self.repo.lookupField(klass, index)
+                value = evalstack.pop()
+                fklazz = field.klass
+                fklazz.set_static_field(field.name, value)
 
             elif opcode.name == "RET":
                 print(">> ", opcode.name)
@@ -460,15 +530,16 @@ class Intrptr(object):
 
             elif opcode.name == "RETURN":
                 print(">> ", opcode.name)
-                pass
+                return None
 
             elif opcode.name == "SIPUSH":
                 print(">> ", opcode.name)
-                pass
+                val = (toint(bytecode[offset + 0]) << 8) + toint(bytecode[offset + 1])
+                evalstack.iconst(val)
 
             elif opcode.name == "SWAP":
                 print(">> ", opcode.name)
-                pass
+                evalstack.swap()
 
         return None
 

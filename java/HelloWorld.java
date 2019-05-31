@@ -9,4 +9,8 @@ public class HelloWorld {
     public int multiply(int a) {
     	return a * 5;
     }
+
+    public int compute() {
+    	return add(2, 5);
+    }
 }

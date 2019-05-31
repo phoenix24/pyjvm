@@ -233,6 +233,14 @@ class PyVMKlass(object):
            and self.methods == other.methods \
            and self.methodsByIndex == other.methodsByIndex
 
+    def __str__(self):
+        return "PyVMKlass(name={}, methods={}, methodsIdx={}, fields={}, staticfields={})".format(
+            self.name, len(self.methods), len(self.methodsByIndex), len(self.fields), len(self.staticFieldByName)
+        )
+
+    def __repr__(self):
+        return self.__str__()
+
 
 class PyVMField(object):
     def __init__(self, klass: PyVMKlass, name: str, type: PyVMType, flags: int):
@@ -259,34 +267,50 @@ class PyVMField(object):
 
 class PyVMMethod(object):
     def __init__(self, klass: PyVMKlass, signature, name_type: str, bytecode, flags: int):
+        self.args = -1
         self.klass = klass
         self.flags = flags
         self.bytecode = bytecode
         self.signature = signature
         self.name_type = name_type
-        self.func_params = -1
 
     def is_static(self) -> bool:
         return not not (self.flags & PyVMKonst.ACC_STATIC)
 
     @property
     def num_params(self) -> int:
-        if self.func_params > -1:
-            return self.func_params
+        if self.args > -1:
+            return self.args
 
-        index, self.func_params = 0, 0
+        index, self.args = 0, 0
         while index < len(self.signature):
             char = self.signature[index]
             if char in ('Z', 'B', 'S', 'C', 'I', 'J', 'F', 'D'):
-                self.func_params += 1
+                self.args += 1
             elif char == ')':
-                return self.func_params
+                return self.args
             elif char == 'L':
                 while self.signature[index] != ';':
                     index += 1
             index += 1
 
-        return self.func_params
+        return self.args
+
+    def __str__(self):
+        return "PyVMMethod(klass={}, name_type={}, flags={}, args={})".format(
+            self.klass.name, self.name_type, self.flags, self.args
+        )
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __eq__(self, other: 'PyVMMethod'):
+        return isinstance(other, PyVMMethod) \
+           and self.klass == other.klass \
+           and self.flags == other.flags \
+           and self.bytecode == other.bytecode \
+           and self.signature == other.signature \
+           and self.name_type == other.name_type
 
 
 class PyVMObject(object):

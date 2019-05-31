@@ -8,7 +8,7 @@ class SimpleHeap(object):
         self.counter = 0
         self.heap: Dict[int, PyVMObject] = {}
 
-    def gc(self):
+    def gc(self) -> None:
         print(">>> woops! pyjvm no gc")
 
     def find(self, objectid) -> PyVMObject:
@@ -17,5 +17,5 @@ class SimpleHeap(object):
     def allocate(self, klazz: PyVMKlass) -> int:
         self.counter += 1
         object = PyVMObject.new(klazz, self.counter)
-        self.heap.update({object.pyid, object})
-        return object.pyid
+        self.heap.update({object.idx: object})
+        return object.idx

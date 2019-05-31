@@ -88,13 +88,13 @@ class TestPyVMObject(TestBase):
 
     def test_new(self):
         o = PyVMObject.new(self.pyklass, 0x2)
-        self.assertEqual(o._id, 0x2)
-        self.assertEqual(o._klass.name, 'HelloWorld')
-        self.assertListEqual(o._fields, [None])
+        self.assertEqual(o.idx, 0x2)
+        self.assertEqual(o.klass.name, 'HelloWorld')
+        self.assertListEqual(o.fields, [None])
 
     def test_get_set_field(self):
         fields = self.pyklass.fields
-        name, body = 'greeting', fields['greeting']
+        name, body = 'answer', fields['answer']
         self.assertEqual(len(fields), 1)
         self.assertEqual(fields[name], body)
 
