@@ -2,4 +2,5 @@
 .tox/
 .idea/
 .vscode
+.coverage
 **/__pycache__

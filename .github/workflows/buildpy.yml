@@ -1,4 +1,4 @@
-name: pyjvm application
+name: pyjvm build
 
 on: [push]
 
