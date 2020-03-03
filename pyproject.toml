@@ -8,6 +8,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.7"
 tox = "^3.14.5"
+click = "^7.0"
 
 [tool.poetry.dev-dependencies]
 
