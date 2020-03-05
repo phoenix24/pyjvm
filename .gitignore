@@ -3,4 +3,6 @@
 .idea/
 .vscode
 .coverage
+coverage.xml
+htmlcov/
 **/__pycache__
