@@ -1,10 +1,9 @@
 name: pyjvm build
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -25,7 +24,7 @@ jobs:
     - name: Run Tests with Tox
       run: |
         tox
-    - name: Upload coverage to Codecov  
+    - name: Codecov Github Action  
       uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
@@ -34,3 +33,5 @@ jobs:
         name: codecov-umbrella
         yml: ./codecov.yml 
         fail_ci_if_error: true
+    - name: Coveralls GitHub Action
+       uses: coverallsapp/github-action@v1.0.1
